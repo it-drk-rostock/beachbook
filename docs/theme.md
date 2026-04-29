@@ -52,51 +52,55 @@ Generated from primary `#008CCD` using Material 3 color system principles.
 
 ## CSS Variables (global.css)
 
+Variables must be wrapped in `@variant light` inside `@layer theme { :root { } }` so Uniwind resolves them at runtime.
+
 ```css
 @import "tailwindcss";
 @import "uniwind";
 
 @layer theme {
   :root {
-    --color-primary: #008CCD;
-    --color-on-primary: #FFFFFF;
-    --color-primary-container: #C8E6FF;
-    --color-on-primary-container: #001E31;
+    @variant light {
+      --color-primary: #008CCD;
+      --color-on-primary: #FFFFFF;
+      --color-primary-container: #C8E6FF;
+      --color-on-primary-container: #001E31;
 
-    --color-secondary: #4F6070;
-    --color-on-secondary: #FFFFFF;
-    --color-secondary-container: #D3E4F5;
-    --color-on-secondary-container: #0B1D2B;
+      --color-secondary: #4F6070;
+      --color-on-secondary: #FFFFFF;
+      --color-secondary-container: #D3E4F5;
+      --color-on-secondary-container: #0B1D2B;
 
-    --color-tertiary: #645A7C;
-    --color-on-tertiary: #FFFFFF;
+      --color-tertiary: #645A7C;
+      --color-on-tertiary: #FFFFFF;
 
-    --color-background: #F8F9FF;
-    --color-on-background: #191C20;
+      --color-background: #F8F9FF;
+      --color-on-background: #191C20;
 
-    --color-surface: #F8F9FF;
-    --color-on-surface: #191C20;
-    --color-surface-variant: #DDE3EA;
-    --color-on-surface-variant: #41484F;
+      --color-surface: #F8F9FF;
+      --color-on-surface: #191C20;
+      --color-surface-variant: #DDE3EA;
+      --color-on-surface-variant: #41484F;
 
-    --color-outline: #727980;
-    --color-outline-variant: #C1C7CE;
+      --color-outline: #727980;
+      --color-outline-variant: #C1C7CE;
 
-    --color-error: #BA1A1A;
-    --color-on-error: #FFFFFF;
-    --color-error-container: #FFDAD6;
+      --color-error: #BA1A1A;
+      --color-on-error: #FFFFFF;
+      --color-error-container: #FFDAD6;
 
-    --color-success: #006D3B;
-    --color-warning: #7B5800;
+      --color-success: #006D3B;
+      --color-warning: #7B5800;
 
-    --color-card: #FFFFFF;
-    --color-card-foreground: #191C20;
+      --color-card: #FFFFFF;
+      --color-card-foreground: #191C20;
 
-    --color-muted: #F1F3F6;
-    --color-muted-foreground: #727980;
+      --color-muted: #F1F3F6;
+      --color-muted-foreground: #727980;
 
-    --color-input: #DDE3EA;
-    --color-ring: #008CCD;
+      --color-input: #DDE3EA;
+      --color-ring: #008CCD;
+    }
   }
 }
 ```
@@ -220,3 +224,133 @@ Used for incidents and status indicators:
 | Open        | `bg-success` dot + `text-success` label    |
 | Closed      | `bg-error` dot + `text-error` label        |
 | Restricted  | `bg-warning` dot + `text-warning` label    |
+
+## Spacing System
+
+Use `<Spacer />` components to create consistent vertical rhythm. Never use arbitrary `mt-*` / `mb-*` on content elements -- place a `<Spacer>` between them instead.
+
+### Semantic Sizes
+
+| Size        | Value   | Tailwind | When to use                                     |
+| ----------- | ------- | -------- | ----------------------------------------------- |
+| `section`   | 40px    | `h-10`   | Between major page sections                     |
+| `content`   | 32px    | `h-8`    | Between a title/header and its content area     |
+| `group`     | 24px    | `h-6`    | Between groups of related elements              |
+| `item`      | 16px    | `h-4`    | Between items within a group (default)          |
+| `compact`   | 12px    | `h-3`    | Tight spacing (e.g. between stacked buttons)    |
+| `inline`    | 8px     | `h-2`    | Minimal spacing within compact layouts          |
+
+### Layout Ordering Convention
+
+A typical screen should follow this vertical flow:
+
+```
+SafeAreaView
+├── BrandHeader / PageHeader
+├── Spacer size="section"          ← header → title
+├── Typography (page title)
+├── Spacer size="content"          ← title → first content
+├── Form fields / Content
+│   ├── TextInput
+│   ├── Spacer size="item"         ← between fields
+│   └── TextInput
+├── Spacer size="group"            ← fields → actions
+├── Button (primary)
+├── Spacer size="compact"          ← between buttons
+└── Button (secondary)
+```
+
+### Usage
+
+```tsx
+import { Spacer } from "@/components/spacer";
+
+<BrandHeader />
+<Spacer size="section" />
+<Typography variant="headline-medium" bold>Page Title</Typography>
+<Spacer size="content" />
+{/* content here */}
+<Spacer size="group" />
+<Button fullWidth>Primary Action</Button>
+<Spacer size="compact" />
+<Button variant="outline" fullWidth>Secondary Action</Button>
+```
+
+### When to use `gap-*` instead
+
+Use `gap-*` on a parent `View` when children are uniform and repetitive (e.g. a list of cards, a row of chips). Use `<Spacer>` when different amounts of space are needed between different elements.
+
+## Reusable Components
+
+### `<Typography>`
+
+M3 type scale with optional bold. Located at `components/typography.tsx`.
+
+```tsx
+import { Typography } from "@/components/typography";
+
+<Typography variant="headline-medium" bold>Page Title</Typography>
+<Typography variant="body-large">Body text</Typography>
+<Typography variant="label-large" className="text-primary">Link</Typography>
+```
+
+| Prop        | Type                | Default       |
+| ----------- | ------------------- | ------------- |
+| `variant`   | M3 type scale key   | `body-large`  |
+| `bold`      | `boolean`           | `false`       |
+| `className` | extra Tailwind      | —             |
+
+### `<Button>`
+
+M3-style pill button. Located at `components/button.tsx`.
+
+```tsx
+import { Button } from "@/components/button";
+
+<Button fullWidth>Anmelden</Button>
+<Button variant="outline" fullWidth>Hilfe</Button>
+<Button variant="danger" size="sm">Löschen</Button>
+```
+
+| Prop            | Values                                                       | Default   |
+| --------------- | ------------------------------------------------------------ | --------- |
+| `variant`       | `filled` · `light` · `outline` · `subtle` · `danger` · `danger-light` | `filled` |
+| `size`          | `sm` · `md` · `lg`                                          | `md`      |
+| `fullWidth`     | `boolean`                                                    | `false`   |
+| `textClassName` | extra Tailwind for label                                     | —         |
+
+### `<TextInput>`
+
+Input with icon slots. Located at `components/text-input.tsx`.
+
+```tsx
+import { TextInput } from "@/components/text-input";
+import { IconLock } from "@tabler/icons-react-native";
+
+<TextInput
+  leftIcon={<IconLock size={20} color="#727980" />}
+  placeholder="Passwort"
+  secureTextEntry
+/>
+```
+
+| Prop        | Type            | Default |
+| ----------- | --------------- | ------- |
+| `size`      | `sm` · `md` · `lg` | `md`  |
+| `error`     | `boolean`       | `false` |
+| `leftIcon`  | `ReactNode`     | —       |
+| `rightIcon` | `ReactNode`     | —       |
+
+### `<Spacer>`
+
+Semantic vertical spacing. Located at `components/spacer.tsx`.
+
+```tsx
+import { Spacer } from "@/components/spacer";
+
+<Spacer size="section" />
+```
+
+| Prop   | Values                                                    | Default |
+| ------ | --------------------------------------------------------- | ------- |
+| `size` | `section` · `content` · `group` · `item` · `compact` · `inline` | `item` |

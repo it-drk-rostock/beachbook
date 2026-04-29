@@ -5,7 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
-import {  useSession } from "jazz-tools/react-native";
+import { useSession } from "jazz-tools/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
@@ -60,11 +60,11 @@ function RootLayoutNav() {
     <SafeAreaProvider>
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerBackButtonDisplayMode: "minimal" }}>
-        <Stack.Protected guard={!session?.user_id}>
+        <Stack.Protected guard={true}>
           {/* Screens ONLY available when LOGGED OUT */}
           <Stack.Screen name="index" options={{ headerShown: false }} />
         </Stack.Protected>
-        <Stack.Protected guard={session?.user_id}>
+        <Stack.Protected guard={false}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen
             name="protocols"
