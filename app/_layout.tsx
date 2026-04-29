@@ -1,18 +1,11 @@
 import "jazz-tools/expo/polyfills";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
-import { JazzProvider, useSession } from "jazz-tools/react-native";
-
-import { useColorScheme } from "@/components/useColorScheme";
+import {  useSession } from "jazz-tools/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
