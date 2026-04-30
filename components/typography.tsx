@@ -8,6 +8,7 @@ const typographyVariants = tv({
       "display-large": "text-[57px] font-normal tracking-tight",
       "headline-large": "text-[32px] font-normal",
       "headline-medium": "text-[28px] font-normal",
+      "headline-small": "text-[24px] font-normal",
       "title-large": "text-[22px] font-normal",
       "title-medium": "text-base font-medium tracking-wide",
       "title-small": "text-sm font-medium tracking-wide",

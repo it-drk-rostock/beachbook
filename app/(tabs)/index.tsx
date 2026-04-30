@@ -1,30 +1,118 @@
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { useCSSVariable, withUniwind } from "uniwind";
+import { useAll, useSession } from "jazz-tools/react-native";
+import {
+  IconBuildingCommunity,
+  IconBuildingLighthouse,
+} from "@tabler/icons-react-native";
+import { startOfDay } from "date-fns";
+import { BrandHeader } from "@/components/brand-header";
+import { Avatar } from "@/components/avatar";
+import { SyncStatusBadge } from "@/components/sync-status-badge";
+import { PageHeader } from "@/components/page-header";
+import { Spacer } from "@/components/spacer";
+import { EmptyStateCard } from "@/components/empty-state-card";
+import { app } from "@/schema";
 
-import EditScreenInfo from "@/components/EditScreenInfo";
+const StyledSafeAreaView = withUniwind(SafeAreaView);
 
-export default function TabOneScreen() {
+export default function DashboardScreen() {
+  const router = useRouter();
+  const session = useSession();
+  const primaryColor = useCSSVariable("--color-primary") as string;
+  const today = startOfDay(new Date());
+
+  const membership = useAll(
+    session
+      ? app.members
+          .where({ user_id: session.user_id })
+          .include({
+            organization: true,
+            towers: app.towers.include({
+              towerdaysViaTower: app.towerdays.where({
+                date: { gte: today.getTime() },
+              }),
+            }),
+          })
+          .limit(1)
+      : undefined,
+  );
+
+  const isLoaded = membership !== undefined;
+  const member = membership?.[0];
+  const hasOrganization = isLoaded && !!member;
+  const towers = member?.towers ?? [];
+  const hasTowers = towers.length > 0;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <StyledSafeAreaView className="flex-1 bg-background" edges={["top"]}>
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-6 pt-4 pb-8"
+      >
+        <View className="flex-row items-center justify-between">
+          <BrandHeader />
+          <Avatar
+            image={{ uri: "", name: member?.name ?? "?" }}
+            size={40}
+            backgroundColor={primaryColor}
+            showBorder={false}
+            onPress={() => router.push("/me")}
+          />
+        </View>
+
+        <Spacer size="inline" />
+        <SyncStatusBadge />
+
+        <Spacer size="group" />
+        <PageHeader>Dashboard</PageHeader>
+
+        {isLoaded && !hasOrganization && (
+          <>
+            <Spacer size="group" />
+            <EmptyStateCard
+              tone="primary"
+              icon={<IconBuildingCommunity size={24} color={primaryColor} />}
+              title="Keine Organisation"
+              description="Frage deinen Wachleiter oder erstelle deine eigene Organisation."
+              onPress={() => router.push("/organization")}
+            />
+
+            <Spacer size="compact" />
+            <EmptyStateCard
+              tone="surface"
+              icon={<IconBuildingLighthouse size={24} color={primaryColor} />}
+              title="Keine Türme"
+              description="Um Türme zu sehen, brauchst du eine Organisation."
+              onPress={() => router.push("/towers")}
+            />
+          </>
+        )}
+
+        {hasOrganization && !hasTowers && (
+          <>
+            <Spacer size="group" />
+            <EmptyStateCard
+              tone="surface"
+              icon={<IconBuildingLighthouse size={24} color={primaryColor} />}
+              title="Keine Türme"
+              description="Frag deinen Wachleiter, dich bei einem bestehenden Turm einzuladen."
+              onPress={() => router.push("/towers")}
+            />
+          </>
+        )}
+
+        {hasTowers && (
+          <>
+            <Spacer size="group" />
+            {/* Tower cards based on member.towerIds */}
+          </>
+        )}
+
+        <Spacer size="group" />
+      </ScrollView>
+    </StyledSafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-});

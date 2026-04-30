@@ -8,8 +8,8 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <JazzProvider
       config={{
-        appId: process.env.EXPO_PUBLIC_JAZZ_APP_ID,
-        serverUrl: process.env.EXPO_PUBLIC_JAZZ_SERVER_URL,
+        appId: process.env.EXPO_PUBLIC_JAZZ_APP_ID!,
+        serverUrl: process.env.EXPO_PUBLIC_JAZZ_SERVER_URL!,
         secret,
       }}
     >

@@ -15,11 +15,12 @@
   --color-tertiary: #645a7c;
   --color-on-tertiary: #ffffff;
 
-  --color-background: #f8f9ff;
+  --color-background: #ffffff;
   --color-on-background: #191c20;
 
-  --color-surface: #f8f9ff;
+  --color-surface: #ffffff;
   --color-on-surface: #191c20;
+  --color-surface-container: #f4f7fb;
   --color-surface-variant: #dde3ea;
   --color-on-surface-variant: #41484f;
 

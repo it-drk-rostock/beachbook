@@ -60,11 +60,11 @@ function RootLayoutNav() {
     <SafeAreaProvider>
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerBackButtonDisplayMode: "minimal" }}>
-        <Stack.Protected guard={true}>
+        <Stack.Protected guard={false}>
           {/* Screens ONLY available when LOGGED OUT */}
           <Stack.Screen name="index" options={{ headerShown: false }} />
         </Stack.Protected>
-        <Stack.Protected guard={false}>
+        <Stack.Protected guard={true}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen
             name="protocols"
@@ -121,7 +121,14 @@ function RootLayoutNav() {
               headerShadowVisible: false,
             }}
           />
-          <Stack.Screen name="me" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="me"
+            options={{
+              headerShown: true,
+              headerTitle: "Account",
+              headerShadowVisible: false,
+            }}
+          />
           <Stack.Screen
             name="towers"
             options={{

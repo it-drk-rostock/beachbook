@@ -1,9 +1,261 @@
-import { View, Text } from "react-native";
+import { View, Pressable, ScrollView } from "react-native";
+import { useCSSVariable } from "uniwind";
+import { useAll, useSession } from "jazz-tools/react-native";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import {
+  IconBuildingCommunity,
+  IconUsersGroup,
+  IconMapPin,
+  IconTrash,
+  IconPlus,
+  IconUser,
+  IconPencil,
+} from "@tabler/icons-react-native";
+import { Typography } from "@/components/typography";
+import { Button } from "@/components/button";
+import { SectionHeader } from "@/components/section-header";
+import { Spacer } from "@/components/spacer";
+import { EmptyState } from "@/components/empty-state";
+import { OrganizationForm } from "@/components/organization-form";
+import { app } from "@/schema";
 
-export default function OrganizationScreen() {  
+export default function OrganizationScreen() {
+  const session = useSession();
+  const primaryColor = useCSSVariable("--color-primary") as string;
+
+  const membership = useAll(
+    session
+      ? app.members.where({ user_id: session.user_id }).include({
+          organization: app.organizations.include({
+            locationsViaOrganization: true,
+            membersViaOrganization: true,
+          }),
+        })
+      : undefined,
+  );
+
+  const member = membership?.[0];
+  const organization = member?.organization;
+  const locations = organization?.locationsViaOrganization ?? [];
+  const orgMembers = organization?.membersViaOrganization ?? [];
+
+  const dismissSheet = (name: string) => TrueSheet.dismiss(name);
+
+  const roleLabel = (role: string) => {
+    switch (role) {
+      case "admin":
+        return "Admin";
+      case "guardleader":
+        return "Wachleiter";
+      case "towerleader":
+        return "Turmleiter";
+      default:
+        return role;
+    }
+  };
+
+  if (membership === undefined) {
+    return <View className="flex-1 bg-background" />;
+  }
+
+  if (!member || !organization) {
     return (
-        <View>
-            <Text>Organization</Text>
-        </View>
+      <View className="flex-1 bg-background px-6 pt-4">
+        <EmptyState
+          icon={<IconBuildingCommunity size={28} color={primaryColor} />}
+          title="Keine Organisation"
+          description="Du bist noch keiner Organisation beigetreten. Frage deinen Wachleiter oder erstelle deine eigene."
+          actionLabel="Organisation erstellen"
+          onAction={() => TrueSheet.present("org-create")}
+        />
+        <TrueSheet
+          name="org-create"
+          detents={["auto"]}
+          cornerRadius={24}
+          grabber
+          backgroundColor="#FFFFFF"
+        >
+          <OrganizationForm
+            onSuccess={() => dismissSheet("org-create")}
+            onCancel={() => dismissSheet("org-create")}
+          />
+        </TrueSheet>
+      </View>
     );
+  }
+
+  return (
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerClassName="px-6 pb-8 pt-4"
+    >
+      {/* Org Name Card */}
+      <Pressable
+        className="rounded-2xl bg-primary/5 p-4 flex-row items-center gap-3 active:opacity-80"
+        onPress={() => TrueSheet.present("org-edit")}
+      >
+        <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+          <IconBuildingCommunity size={20} color={primaryColor} />
+        </View>
+        <Typography variant="body-large" bold className="flex-1">
+          {organization.name}
+        </Typography>
+        <IconPencil size={18} color={primaryColor} />
+      </Pressable>
+
+      <Spacer size="compact" />
+
+      {/* Invite Button */}
+      <Button
+        variant="light"
+        fullWidth
+        onPress={() => {
+          /* TODO: Invite bottom sheet */
+        }}
+      >
+        <View className="flex-row items-center gap-2">
+          <IconUsersGroup size={20} color={primaryColor} />
+          <Typography variant="body-large" bold className="text-primary">
+            Mitglieder einladen
+          </Typography>
+        </View>
+      </Button>
+
+      <Spacer size="section" />
+
+      {/* Standorte Section */}
+      <View className="flex-row items-center justify-between">
+        <SectionHeader>Standorte</SectionHeader>
+        <Pressable
+          className="h-9 w-9 items-center justify-center rounded-full active:opacity-50"
+          onPress={() => {
+            /* TODO: Add location bottom sheet */
+          }}
+        >
+          <IconPlus size={22} color={primaryColor} />
+        </Pressable>
+      </View>
+
+      <Spacer size="item" />
+
+      {locations.length > 0 ? (
+        locations.map((location) => (
+          <View
+            key={location.id}
+            className="rounded-2xl bg-surface-container p-4 flex-row items-center gap-3 mb-3"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <IconMapPin size={20} color={primaryColor} />
+            </View>
+            <Typography variant="body-large" className="flex-1">
+              {location.name}
+            </Typography>
+            <Pressable
+              onPress={() => {
+                /* TODO: Delete location */
+              }}
+              className="p-2 active:opacity-50"
+            >
+              <IconTrash size={20} color="#BA1A1A" />
+            </Pressable>
+          </View>
+        ))
+      ) : (
+        <View className="rounded-2xl bg-surface-container p-4 items-center">
+          <Typography
+            variant="body-medium"
+            className="text-on-surface-variant"
+          >
+            Noch keine Standorte hinzugefügt.
+          </Typography>
+        </View>
+      )}
+
+      <Spacer size="section" />
+
+      {/* Mitglieder Section */}
+      <View className="flex-row items-center justify-between">
+        <SectionHeader>Mitglieder</SectionHeader>
+        <View className="h-7 min-w-7 items-center justify-center rounded-full bg-surface-container px-2">
+          <Typography
+            variant="label-medium"
+            className="text-on-surface-variant"
+          >
+            {orgMembers.length}
+          </Typography>
+        </View>
+      </View>
+
+      <Spacer size="item" />
+
+      {/* Members Container */}
+      {orgMembers.length > 0 ? (
+        <View className="rounded-2xl bg-surface-container overflow-hidden">
+          {orgMembers.map((m, index) => (
+            <View key={m.id}>
+              <View className="p-4 flex-row items-center gap-3">
+                <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <IconUser size={20} color={primaryColor} />
+                </View>
+                <Typography variant="body-large" className="flex-1">
+                  {m.name}
+                  {m.user_id === session?.user_id && (
+                    <Typography
+                      variant="body-large"
+                      className="text-on-surface-variant"
+                    >
+                      {" "}
+                      (ich)
+                    </Typography>
+                  )}
+                </Typography>
+                {m.role === "admin" ? (
+                  <View className="rounded-full bg-primary px-3 py-1">
+                    <Typography
+                      variant="label-medium"
+                      className="text-on-primary"
+                    >
+                      Admin
+                    </Typography>
+                  </View>
+                ) : (
+                  <Typography
+                    variant="body-medium"
+                    className="text-on-surface-variant"
+                  >
+                    {roleLabel(m.role)}
+                  </Typography>
+                )}
+              </View>
+              {index < orgMembers.length - 1 && (
+                <View className="h-px bg-outline-variant mx-4" />
+              )}
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View className="rounded-2xl bg-surface-container p-4 items-center">
+          <Typography
+            variant="body-medium"
+            className="text-on-surface-variant"
+          >
+            Noch keine Mitglieder.
+          </Typography>
+        </View>
+      )}
+      <TrueSheet
+        name="org-edit"
+        detents={["auto"]}
+        cornerRadius={24}
+        grabber
+        backgroundColor="#FFFFFF"
+      >
+        <OrganizationForm
+          organization={{ id: organization.id, name: organization.name }}
+          onSuccess={() => dismissSheet("org-edit")}
+          onCancel={() => dismissSheet("org-edit")}
+        />
+      </TrueSheet>
+    </ScrollView>
+  );
 }

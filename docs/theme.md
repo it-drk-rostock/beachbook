@@ -36,9 +36,10 @@ Generated from primary `#008CCD` using Material 3 color system principles.
 | `--color-on-secondary-container` | `#0B1D2B` | Text on secondary container       |
 | `--color-tertiary`     | `#645A7C`   | Accent elements, complementary UI        |
 | `--color-on-tertiary`  | `#FFFFFF`   | Text/icons on tertiary                   |
-| `--color-background`   | `#F8F9FF`   | Page background                          |
+| `--color-background`   | `#FFFFFF`   | Page background (all screens)            |
 | `--color-on-background`| `#191C20`   | Primary text                             |
-| `--color-surface`      | `#F8F9FF`   | Card/sheet surfaces                      |
+| `--color-surface`      | `#FFFFFF`   | Card/sheet surfaces                      |
+| `--color-surface-container` | `#F4F7FB` | Subtle elevated/info cards          |
 | `--color-on-surface`   | `#191C20`   | Text on surfaces                         |
 | `--color-surface-variant` | `#DDE3EA` | Dividers, disabled backgrounds           |
 | `--color-on-surface-variant` | `#41484F` | Secondary text, icons                |
@@ -74,11 +75,12 @@ Variables must be wrapped in `@variant light` inside `@layer theme { :root { } }
       --color-tertiary: #645A7C;
       --color-on-tertiary: #FFFFFF;
 
-      --color-background: #F8F9FF;
+      --color-background: #FFFFFF;
       --color-on-background: #191C20;
 
-      --color-surface: #F8F9FF;
+      --color-surface: #FFFFFF;
       --color-on-surface: #191C20;
+      --color-surface-container: #F4F7FB;
       --color-surface-variant: #DDE3EA;
       --color-on-surface-variant: #41484F;
 
@@ -113,6 +115,7 @@ Variables must be wrapped in `@variant light` inside `@layer theme { :root { } }
 // Backgrounds
 className="bg-background"          // page background
 className="bg-surface"             // card/sheet surface
+className="bg-surface-container"   // subtle elevated container
 className="bg-primary"             // primary accent
 className="bg-primary-container"   // soft primary
 
