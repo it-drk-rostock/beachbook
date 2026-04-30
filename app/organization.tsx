@@ -1,6 +1,6 @@
 import { View, Pressable, ScrollView } from "react-native";
 import { useCSSVariable } from "uniwind";
-import { useAll, useSession } from "jazz-tools/react-native";
+import { useAll } from "jazz-tools/react-native";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   IconBuildingCommunity,
@@ -17,27 +17,26 @@ import { SectionHeader } from "@/components/section-header";
 import { Spacer } from "@/components/spacer";
 import { EmptyState } from "@/components/empty-state";
 import { OrganizationForm } from "@/components/organization-form";
+import { useUser } from "@/hooks/use-user";
 import { app } from "@/schema";
 
 export default function OrganizationScreen() {
-  const session = useSession();
   const primaryColor = useCSSVariable("--color-primary") as string;
+  const { isLoading, member, organization, isAdmin, session } = useUser();
 
-  const membership = useAll(
-    session
-      ? app.members.where({ user_id: session.user_id }).include({
-          organization: app.organizations.include({
+  const orgData = useAll(
+    organization
+      ? app.organizations
+          .where({ id: organization.id })
+          .include({
             locationsViaOrganization: true,
             membersViaOrganization: true,
-          }),
-        })
+          })
       : undefined,
   );
 
-  const member = membership?.[0];
-  const organization = member?.organization;
-  const locations = organization?.locationsViaOrganization ?? [];
-  const orgMembers = organization?.membersViaOrganization ?? [];
+  const locations = orgData?.[0]?.locationsViaOrganization ?? [];
+  const orgMembers = orgData?.[0]?.membersViaOrganization ?? [];
 
   const dismissSheet = (name: string) => TrueSheet.dismiss(name);
 
@@ -54,7 +53,7 @@ export default function OrganizationScreen() {
     }
   };
 
-  if (membership === undefined) {
+  if (isLoading) {
     return <View className="flex-1 bg-background" />;
   }
 
@@ -90,50 +89,65 @@ export default function OrganizationScreen() {
       contentContainerClassName="px-6 pb-8 pt-4"
     >
       {/* Org Name Card */}
-      <Pressable
-        className="rounded-2xl bg-primary/5 p-4 flex-row items-center gap-3 active:opacity-80"
-        onPress={() => TrueSheet.present("org-edit")}
-      >
-        <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
-          <IconBuildingCommunity size={20} color={primaryColor} />
+      {isAdmin ? (
+        <Pressable
+          className="rounded-2xl bg-primary/5 p-4 flex-row items-center gap-3 active:opacity-80"
+          onPress={() => TrueSheet.present("org-edit")}
+        >
+          <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <IconBuildingCommunity size={20} color={primaryColor} />
+          </View>
+          <Typography variant="body-large" bold className="flex-1">
+            {organization.name}
+          </Typography>
+          <IconPencil size={18} color={primaryColor} />
+        </Pressable>
+      ) : (
+        <View className="rounded-2xl bg-primary/5 p-4 flex-row items-center gap-3">
+          <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <IconBuildingCommunity size={20} color={primaryColor} />
+          </View>
+          <Typography variant="body-large" bold className="flex-1">
+            {organization.name}
+          </Typography>
         </View>
-        <Typography variant="body-large" bold className="flex-1">
-          {organization.name}
-        </Typography>
-        <IconPencil size={18} color={primaryColor} />
-      </Pressable>
+      )}
 
       <Spacer size="compact" />
 
-      {/* Invite Button */}
-      <Button
-        variant="light"
-        fullWidth
-        onPress={() => {
-          /* TODO: Invite bottom sheet */
-        }}
-      >
-        <View className="flex-row items-center gap-2">
-          <IconUsersGroup size={20} color={primaryColor} />
-          <Typography variant="body-large" bold className="text-primary">
-            Mitglieder einladen
-          </Typography>
-        </View>
-      </Button>
+      {/* Invite Button - only for admins */}
+      {isAdmin && (
+        <Button
+          variant="light"
+          fullWidth
+          onPress={() => {
+            /* TODO: Invite bottom sheet */
+          }}
+        >
+          <View className="flex-row items-center gap-2">
+            <IconUsersGroup size={20} color={primaryColor} />
+            <Typography variant="body-large" bold className="text-primary">
+              Mitglieder einladen
+            </Typography>
+          </View>
+        </Button>
+      )}
 
       <Spacer size="section" />
 
       {/* Standorte Section */}
       <View className="flex-row items-center justify-between">
         <SectionHeader>Standorte</SectionHeader>
-        <Pressable
-          className="h-9 w-9 items-center justify-center rounded-full active:opacity-50"
-          onPress={() => {
-            /* TODO: Add location bottom sheet */
-          }}
-        >
-          <IconPlus size={22} color={primaryColor} />
-        </Pressable>
+        {isAdmin && (
+          <Pressable
+            className="h-9 w-9 items-center justify-center rounded-full active:opacity-50"
+            onPress={() => {
+              /* TODO: Add location bottom sheet */
+            }}
+          >
+            <IconPlus size={22} color={primaryColor} />
+          </Pressable>
+        )}
       </View>
 
       <Spacer size="item" />
@@ -150,14 +164,16 @@ export default function OrganizationScreen() {
             <Typography variant="body-large" className="flex-1">
               {location.name}
             </Typography>
-            <Pressable
-              onPress={() => {
-                /* TODO: Delete location */
-              }}
-              className="p-2 active:opacity-50"
-            >
-              <IconTrash size={20} color="#BA1A1A" />
-            </Pressable>
+            {isAdmin && (
+              <Pressable
+                onPress={() => {
+                  /* TODO: Delete location */
+                }}
+                className="p-2 active:opacity-50"
+              >
+                <IconTrash size={20} color="#BA1A1A" />
+              </Pressable>
+            )}
           </View>
         ))
       ) : (
@@ -243,19 +259,22 @@ export default function OrganizationScreen() {
           </Typography>
         </View>
       )}
-      <TrueSheet
-        name="org-edit"
-        detents={["auto"]}
-        cornerRadius={24}
-        grabber
-        backgroundColor="#FFFFFF"
-      >
-        <OrganizationForm
-          organization={{ id: organization.id, name: organization.name }}
-          onSuccess={() => dismissSheet("org-edit")}
-          onCancel={() => dismissSheet("org-edit")}
-        />
-      </TrueSheet>
+
+      {isAdmin && (
+        <TrueSheet
+          name="org-edit"
+          detents={["auto"]}
+          cornerRadius={24}
+          grabber
+          backgroundColor="#FFFFFF"
+        >
+          <OrganizationForm
+            organization={{ id: organization.id, name: organization.name }}
+            onSuccess={() => dismissSheet("org-edit")}
+            onCancel={() => dismissSheet("org-edit")}
+          />
+        </TrueSheet>
+      )}
     </ScrollView>
   );
 }

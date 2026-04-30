@@ -2,48 +2,27 @@ import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useCSSVariable, withUniwind } from "uniwind";
-import { useAll, useSession } from "jazz-tools/react-native";
 import {
   IconBuildingCommunity,
   IconBuildingLighthouse,
 } from "@tabler/icons-react-native";
-import { startOfDay } from "date-fns";
 import { BrandHeader } from "@/components/brand-header";
 import { Avatar } from "@/components/avatar";
 import { SyncStatusBadge } from "@/components/sync-status-badge";
 import { PageHeader } from "@/components/page-header";
 import { Spacer } from "@/components/spacer";
 import { EmptyStateCard } from "@/components/empty-state-card";
-import { app } from "@/schema";
+import { useUser } from "@/hooks/use-user";
 
 const StyledSafeAreaView = withUniwind(SafeAreaView);
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const session = useSession();
   const primaryColor = useCSSVariable("--color-primary") as string;
-  const today = startOfDay(new Date());
+  const { isLoading, member, organization, name } = useUser();
 
-  const membership = useAll(
-    session
-      ? app.members
-          .where({ user_id: session.user_id })
-          .include({
-            organization: true,
-            towers: app.towers.include({
-              towerdaysViaTower: app.towerdays.where({
-                date: { gte: today.getTime() },
-              }),
-            }),
-          })
-          .limit(1)
-      : undefined,
-  );
-
-  const isLoaded = membership !== undefined;
-  const member = membership?.[0];
-  const hasOrganization = isLoaded && !!member;
-  const towers = member?.towers ?? [];
+  const hasOrganization = !isLoading && !!member;
+  const towers = member?.towerIds ?? [];
   const hasTowers = towers.length > 0;
 
   return (
@@ -55,7 +34,7 @@ export default function DashboardScreen() {
         <View className="flex-row items-center justify-between">
           <BrandHeader />
           <Avatar
-            image={{ uri: "", name: member?.name ?? "?" }}
+            image={{ uri: "", name }}
             size={40}
             backgroundColor={primaryColor}
             showBorder={false}
@@ -69,7 +48,7 @@ export default function DashboardScreen() {
         <Spacer size="group" />
         <PageHeader>Dashboard</PageHeader>
 
-        {isLoaded && !hasOrganization && (
+        {!isLoading && !hasOrganization && (
           <>
             <Spacer size="group" />
             <EmptyStateCard
