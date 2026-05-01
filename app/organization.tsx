@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react-native";
 import { Typography } from "@/components/typography";
 import { Button } from "@/components/button";
+import { Divider } from "@/components/divider";
 import { SectionHeader } from "@/components/section-header";
 import { Spacer } from "@/components/spacer";
 import { EmptyState } from "@/components/empty-state";
@@ -243,9 +244,7 @@ export default function OrganizationScreen() {
                   </Typography>
                 )}
               </View>
-              {index < orgMembers.length - 1 && (
-                <View className="h-px bg-outline-variant mx-4" />
-              )}
+              {index < orgMembers.length - 1 && <Divider />}
             </View>
           ))}
         </View>
