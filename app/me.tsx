@@ -4,19 +4,27 @@ import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCSSVariable, withUniwind } from "uniwind";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import QRCode from "react-native-qrcode-svg";
 import { Avatar } from "@/components/avatar";
 import { Button } from "@/components/button";
 import { Spacer } from "@/components/spacer";
 import { Typography } from "@/components/typography";
 import { MemberNameForm } from "@/components/member-name-form";
 import { useUser } from "@/hooks/use-user";
+import { useLocalFirstAuth } from "jazz-tools/expo";
 
 const StyledSafeAreaView = withUniwind(SafeAreaView);
 
 export default function MeScreen() {
   const router = useRouter();
   const primaryColor = useCSSVariable("--color-primary") as string;
-  const { name, role, member } = useUser();
+  const { name, role, member, session } = useUser();
+  const {signOut} = useLocalFirstAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace("/");
+  };
 
   const roleLabel = () => {
     switch (role) {
@@ -61,11 +69,18 @@ export default function MeScreen() {
 
         <View className="pb-4">
           <Button
+            variant="light"
+            fullWidth
+            onPress={() => TrueSheet.present("user-qr")}
+          >
+            QR-Code Nutzerinfo
+          </Button>
+          <Spacer size="compact" />
+          <Button
             variant="danger-light"
             fullWidth
             onPress={() => {
-              // TODO: wire real sign-out flow
-              console.log("Sign out pressed");
+              handleSignOut();
             }}
           >
             <View className="flex-row items-center gap-2">
@@ -100,6 +115,46 @@ export default function MeScreen() {
           />
         </TrueSheet>
       )}
+
+      <TrueSheet
+        name="user-qr"
+        detents={["auto"]}
+        cornerRadius={24}
+        grabber
+        backgroundColor="#FFFFFF"
+      >
+        <View style={{ padding: 24, paddingTop: 8 }} className="items-center">
+          <Spacer size="item" />
+          <Typography variant="title-large" bold>
+            Nutzer QR-Code
+          </Typography>
+          <Spacer size="item" />
+          <Typography variant="body-medium" className="text-on-surface-variant">
+            User ID: {session?.user_id ?? "-"}
+          </Typography>
+          <Spacer size="group" />
+          {session?.user_id ? (
+            <View className="rounded-xl bg-white p-3">
+              <QRCode value={session.user_id} size={220} />
+            </View>
+          ) : (
+            <Typography
+              variant="body-medium"
+              className="text-on-surface-variant"
+            >
+              Keine User-ID vorhanden.
+            </Typography>
+          )}
+          <Spacer size="group" />
+          <Button
+            variant="subtle"
+            fullWidth
+            onPress={() => TrueSheet.dismiss("user-qr")}
+          >
+            Schließen
+          </Button>
+        </View>
+      </TrueSheet>
     </StyledSafeAreaView>
   );
 }

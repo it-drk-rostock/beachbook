@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { View, Pressable, ScrollView } from "react-native";
+import { Alert, View, Pressable, ScrollView } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { useAll, useDb } from "jazz-tools/react-native";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import {
   IconBuildingCommunity,
   IconUsersGroup,
@@ -17,6 +18,7 @@ import { SectionHeader } from "@/components/section-header";
 import { Spacer } from "@/components/spacer";
 import { EmptyState } from "@/components/empty-state";
 import { LocationForm } from "@/components/location-form";
+import { MemberInviteForm } from "@/components/member-invite-form";
 import { OrganizationForm } from "@/components/organization-form";
 import { useUser } from "@/hooks/use-user";
 import { app } from "@/schema";
@@ -29,6 +31,9 @@ export default function OrganizationScreen() {
     id: string;
     name: string;
   } | null>(null);
+  const [scannedUserId, setScannedUserId] = useState<string | null>(null);
+  const [scannerLocked, setScannerLocked] = useState(false);
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
   const orgData = useAll(
     organization
@@ -45,6 +50,61 @@ export default function OrganizationScreen() {
   const orgMembers = orgData?.[0]?.membersViaOrganization ?? [];
 
   const dismissSheet = (name: string) => TrueSheet.dismiss(name);
+
+  const parseScannedUserId = (rawData: string) => {
+    const trimmed = rawData.trim();
+    if (!trimmed) return null;
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed?.user_id === "string" && parsed.user_id.trim()) {
+        return parsed.user_id.trim();
+      }
+      if (typeof parsed?.userId === "string" && parsed.userId.trim()) {
+        return parsed.userId.trim();
+      }
+    } catch {
+      // Not JSON, continue with raw string.
+    }
+
+    return trimmed;
+  };
+
+  const openInviteScanner = async () => {
+    if (!cameraPermission?.granted) {
+      const result = await requestCameraPermission();
+      if (!result.granted) {
+        Alert.alert("Kamera benötigt", "Bitte erlaube den Kamera-Zugriff.");
+        return;
+      }
+    }
+    setScannerLocked(false);
+    TrueSheet.present("invite-scanner");
+  };
+
+  const handleScannedInviteCode = (data: string) => {
+    if (scannerLocked) return;
+    setScannerLocked(true);
+
+    const userId = parseScannedUserId(data);
+    if (!userId) {
+      setScannerLocked(false);
+      Alert.alert("Ungültiger QR-Code", "Keine User-ID gefunden.");
+      return;
+    }
+
+    if (orgMembers.some((m) => m.user_id === userId)) {
+      dismissSheet("invite-scanner");
+      setScannerLocked(false);
+      Alert.alert("Bereits Mitglied", "Dieser Nutzer ist bereits eingeladen.");
+      return;
+    }
+
+    setScannedUserId(userId);
+    dismissSheet("invite-scanner");
+    TrueSheet.present("invite-member");
+    setScannerLocked(false);
+  };
 
   const roleLabel = (role: string) => {
     switch (role) {
@@ -125,9 +185,7 @@ export default function OrganizationScreen() {
         <Button
           variant="light"
           fullWidth
-          onPress={() => {
-            /* TODO: Invite bottom sheet */
-          }}
+          onPress={openInviteScanner}
         >
           <View className="flex-row items-center gap-2">
             <IconUsersGroup size={20} color={primaryColor} />
@@ -320,6 +378,70 @@ export default function OrganizationScreen() {
               <View style={{ padding: 24 }}>
                 <Typography variant="body-medium" className="text-on-surface-variant">
                   Kein Standort ausgewählt.
+                </Typography>
+              </View>
+            )}
+          </TrueSheet>
+
+          <TrueSheet
+            name="invite-scanner"
+            detents={["auto"]}
+            cornerRadius={24}
+            grabber
+            backgroundColor="#FFFFFF"
+          >
+            <View style={{ padding: 24, paddingTop: 8 }}>
+              <Spacer size="item" />
+              <Typography variant="title-large" bold>
+                QR-Code scannen
+              </Typography>
+              <Spacer size="inline" />
+              <Typography variant="body-medium" className="text-on-surface-variant">
+                Scanne den QR-Code des Nutzers, um die User-ID zu übernehmen.
+              </Typography>
+              <Spacer size="group" />
+              <View className="overflow-hidden rounded-xl bg-surface-container">
+                <CameraView
+                  style={{ width: "100%", height: 280 }}
+                  barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+                  onBarcodeScanned={({ data }) => handleScannedInviteCode(data)}
+                />
+              </View>
+              <Spacer size="group" />
+              <Button
+                variant="subtle"
+                fullWidth
+                onPress={() => dismissSheet("invite-scanner")}
+              >
+                Schließen
+              </Button>
+            </View>
+          </TrueSheet>
+
+          <TrueSheet
+            name="invite-member"
+            detents={["auto"]}
+            cornerRadius={24}
+            grabber
+            backgroundColor="#FFFFFF"
+          >
+            {scannedUserId ? (
+              <MemberInviteForm
+                organizationId={organization.id}
+                userId={scannedUserId}
+                onSuccess={() => {
+                  dismissSheet("invite-member");
+                  setScannedUserId(null);
+                }}
+                onCancel={() => {
+                  dismissSheet("invite-member");
+                  setScannedUserId(null);
+                }}
+              />
+            ) : (
+              <View style={{ padding: 24 }}>
+                <Typography variant="body-medium" className="text-on-surface-variant">
+                  Kein QR-Code gescannt.
                 </Typography>
               </View>
             )}
