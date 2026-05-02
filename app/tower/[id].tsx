@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/empty-state";
 import { TowerdayGuards } from "@/components/towerday-guards";
 import { TowerdayTodos } from "@/components/towerday-todos";
 import { TowerdayIncidents } from "@/components/towerday-incidents";
+import { TowerdayWeather } from "@/components/towerday-weather";
 import { useUser } from "@/hooks/use-user";
 
 type TowerStatus =
@@ -75,6 +76,7 @@ export default function TowerDetailScreen() {
             guardsViaTowerday: true,
             todosViaTowerday: true,
             incidentsViaTowerday: true,
+            weatherViaTowerday: true,
           })
       : undefined,
   );
@@ -263,6 +265,21 @@ export default function TowerDetailScreen() {
               id: i.id,
               description: i.description,
               dateTime: i.dateTime,
+            }))}
+          />
+
+          <Spacer size="group" />
+
+          <TowerdayWeather
+            towerdayId={towerday.id}
+            organizationId={tower.organizationId}
+            weather={(towerday.weatherViaTowerday ?? []).map((w) => ({
+              id: w.id,
+              dateTime: w.dateTime,
+              airInCelsius: w.airInCelsius,
+              waterInCelsius: w.waterInCelsius,
+              windInBft: w.windInBft,
+              windDirection: w.windDirection,
             }))}
           />
         </>

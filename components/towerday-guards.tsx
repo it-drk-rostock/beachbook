@@ -345,14 +345,12 @@ export function TowerdayGuards({
                     )}
                   />
                 </View>
-                {fields.length > 1 && (
-                  <Pressable
-                    className="h-10 w-10 items-center justify-center rounded-full active:opacity-70"
-                    onPress={() => remove(index)}
-                  >
-                    <IconX size={18} color="#BA1A1A" />
-                  </Pressable>
-                )}
+                <Pressable
+                  className="h-10 w-10 items-center justify-center rounded-full bg-error/10 active:opacity-70"
+                  onPress={() => (fields.length > 1 ? remove(index) : addGuardsForm.reset({ guards: [{ name: "" }] }))}
+                >
+                  <IconTrash size={16} color="#BA1A1A" />
+                </Pressable>
               </View>
               <Spacer size="compact" />
             </View>
