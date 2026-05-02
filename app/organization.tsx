@@ -157,7 +157,7 @@ export default function OrganizationScreen() {
       {/* Org Name Card */}
       {isAdmin ? (
         <Pressable
-          className="rounded-2xl bg-primary/5 p-4 flex-row items-center gap-3 active:opacity-80"
+          className="rounded-2xl bg-primary/10 p-4 flex-row items-center gap-3 active:opacity-80"
           onPress={() => TrueSheet.present("org-edit")}
         >
           <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
@@ -168,7 +168,7 @@ export default function OrganizationScreen() {
           </Typography>
         </Pressable>
       ) : (
-        <View className="rounded-2xl bg-primary/5 p-4 flex-row items-center gap-3">
+        <View className="rounded-2xl bg-primary/10 p-4 flex-row items-center gap-3">
           <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
             <IconBuildingCommunity size={20} color={primaryColor} />
           </View>
@@ -252,7 +252,7 @@ export default function OrganizationScreen() {
       {/* Mitglieder Section */}
       <View className="flex-row items-center justify-between">
         <SectionHeader>Mitglieder</SectionHeader>
-        <View className="h-7 min-w-7 items-center justify-center rounded-full bg-surface-container px-2">
+        <View className="h-7 min-w-7 items-center justify-center rounded-full bg-surface-container-high px-2">
           <Typography
             variant="label-medium"
             className="text-on-surface-variant"
@@ -400,7 +400,7 @@ export default function OrganizationScreen() {
                 Scanne den QR-Code des Nutzers, um die User-ID zu übernehmen.
               </Typography>
               <Spacer size="group" />
-              <View className="overflow-hidden rounded-xl bg-surface-container">
+              <View className="overflow-hidden rounded-xl bg-surface-container-high">
                 <CameraView
                   style={{ width: "100%", height: 280 }}
                   barcodeScannerSettings={{ barcodeTypes: ["qr"] }}

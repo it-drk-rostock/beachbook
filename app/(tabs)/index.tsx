@@ -1,7 +1,9 @@
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useCSSVariable, withUniwind } from "uniwind";
+import { useAll } from "jazz-tools/react-native";
+import { FlashList } from "@shopify/flash-list";
 import {
   IconBuildingCommunity,
   IconBuildingLighthouse,
@@ -12,7 +14,9 @@ import { SyncStatusBadge } from "@/components/sync-status-badge";
 import { PageHeader } from "@/components/page-header";
 import { Spacer } from "@/components/spacer";
 import { EmptyStateCard } from "@/components/empty-state-card";
+import { TowerCard } from "@/components/tower-card";
 import { useUser } from "@/hooks/use-user";
+import { app } from "@/schema";
 
 const StyledSafeAreaView = withUniwind(SafeAreaView);
 
@@ -22,34 +26,43 @@ export default function DashboardScreen() {
   const { isLoading, member, organization, name } = useUser();
 
   const hasOrganization = !isLoading && !!member;
-  const towers = member?.towerIds ?? [];
-  const hasTowers = towers.length > 0;
+  const towerIds = member?.towerIds ?? [];
+  const hasTowers = towerIds.length > 0;
+
+  const towers = useAll(
+    hasOrganization && organization
+      ? app.towers.where({ organizationId: organization.id }).include({
+          location: true,
+        })
+      : undefined,
+  );
+
+  const myTowers = towers?.filter((t) => towerIds.includes(t.id)) ?? [];
 
   return (
     <StyledSafeAreaView className="flex-1 bg-background" edges={["top"]}>
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-6 pt-4 pb-8"
-      >
-        <View className="flex-row items-center justify-between">
-          <BrandHeader />
-          <Avatar
-            image={{ uri: "", name }}
-            size={40}
-            backgroundColor={primaryColor}
-            showBorder={false}
-            onPress={() => router.push("/me")}
-          />
+      <View className="flex-1">
+        <View className="px-6 pt-4">
+          <View className="flex-row items-center justify-between">
+            <BrandHeader />
+            <Avatar
+              image={{ uri: "", name }}
+              size={40}
+              backgroundColor={primaryColor}
+              showBorder={false}
+              onPress={() => router.push("/me")}
+            />
+          </View>
+
+          <Spacer size="inline" />
+          <SyncStatusBadge />
+
+          <Spacer size="group" />
+          <PageHeader>Dashboard</PageHeader>
         </View>
 
-        <Spacer size="inline" />
-        <SyncStatusBadge />
-
-        <Spacer size="group" />
-        <PageHeader>Dashboard</PageHeader>
-
         {!isLoading && !hasOrganization && (
-          <>
+          <View className="px-6">
             <Spacer size="group" />
             <EmptyStateCard
               tone="primary"
@@ -67,11 +80,11 @@ export default function DashboardScreen() {
               description="Um Türme zu sehen, brauchst du eine Organisation."
               onPress={() => router.push("/towers")}
             />
-          </>
+          </View>
         )}
 
         {hasOrganization && !hasTowers && (
-          <>
+          <View className="px-6">
             <Spacer size="group" />
             <EmptyStateCard
               tone="surface"
@@ -80,18 +93,31 @@ export default function DashboardScreen() {
               description="Frag deinen Wachleiter, dich bei einem bestehenden Turm einzuladen."
               onPress={() => router.push("/towers")}
             />
-          </>
+          </View>
         )}
 
         {hasTowers && (
-          <>
-            <Spacer size="group" />
-            {/* Tower cards based on member.towerIds */}
-          </>
+          <View className="flex-1 mt-4">
+            <FlashList
+              data={myTowers}
+              keyExtractor={(item) => item.id}
+              contentContainerClassName="px-6 pb-8"
+              ItemSeparatorComponent={() => <Spacer size="compact" />}
+              renderItem={({ item }) => (
+                <TowerCard
+                  name={item.name}
+                  number={item.number}
+                  locationName={item.location?.name}
+                  main={item.main}
+                  status={item.status}
+                  showMemberCount={false}
+                  onPress={() => router.push(`/tower/${item.id}` as any)}
+                />
+              )}
+            />
+          </View>
         )}
-
-        <Spacer size="group" />
-      </ScrollView>
+      </View>
     </StyledSafeAreaView>
   );
 }

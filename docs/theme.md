@@ -38,8 +38,9 @@ Generated from primary `#008CCD` using Material 3 color system principles.
 | `--color-on-tertiary`  | `#FFFFFF`   | Text/icons on tertiary                   |
 | `--color-background`   | `#FFFFFF`   | Page background (all screens)            |
 | `--color-on-background`| `#191C20`   | Primary text                             |
-| `--color-surface`      | `#FFFFFF`   | Card/sheet surfaces                      |
-| `--color-surface-container` | `#F4F7FB` | Subtle elevated/info cards          |
+| `--color-surface`      | `#FFFFFF`   | Page bg, sheet surfaces                  |
+| `--color-surface-container` | `#F2F7FB` | All cards, lists, containers             |
+| `--color-surface-container-high` | `#E7F0F8` | Badges, chips, nested emphasis      |
 | `--color-on-surface`   | `#191C20`   | Text on surfaces                         |
 | `--color-surface-variant` | `#DDE3EA` | Dividers, disabled backgrounds           |
 | `--color-on-surface-variant` | `#41484F` | Secondary text, icons                |
@@ -80,7 +81,8 @@ Variables must be wrapped in `@variant light` inside `@layer theme { :root { } }
 
       --color-surface: #FFFFFF;
       --color-on-surface: #191C20;
-      --color-surface-container: #F4F7FB;
+      --color-surface-container: #F2F7FB;
+      --color-surface-container-high: #E7F0F8;
       --color-surface-variant: #DDE3EA;
       --color-on-surface-variant: #41484F;
 
@@ -107,6 +109,56 @@ Variables must be wrapped in `@variant light` inside `@layer theme { :root { } }
 }
 ```
 
+## Surface & Card Background Rules
+
+Use color to communicate **intent**, not just grouping. Two categories:
+
+### 1. Neutral containers — `bg-surface-container`
+
+For data grouping with no action emphasis. The default card background.
+
+**Use for:** Member lists, location cards, tower cards, menu lists, picker sheets, empty inline messages.
+
+```tsx
+className="rounded-2xl bg-surface-container p-4"
+```
+
+### 2. Brand emphasis — `bg-primary/10`
+
+For hero entities and call-to-action cards that invite interaction or represent the primary entity on a screen.
+
+**Use for:** Organization card (hero entity), empty state cards prompting creation, action-oriented cards on the dashboard.
+
+```tsx
+className="rounded-2xl bg-primary/10 p-4"
+```
+
+### Nested emphasis — `bg-surface-container-high`
+
+Only for small elements nested *inside* cards: count badges, chips, icon containers.
+
+```tsx
+className="rounded-full bg-surface-container-high px-2"
+```
+
+### Summary
+
+| Background | Intent | Examples |
+|---|---|---|
+| `bg-surface` (white) | Page background, sheets | ScrollView, TrueSheet |
+| `bg-surface-container` | Neutral data containers | Tower card, member list, settings menu, location card |
+| `bg-surface-container-high` | Nested chips/badges inside cards | Member count pill, icon container in camera sheet |
+| `bg-primary/10` | Hero entity / call-to-action | Org card, empty state prompting creation |
+| `bg-primary/15` | Icon backgrounds inside primary cards | Icon circle in org card |
+
+### Rules
+
+1. Never use more than 2 surface levels on one screen
+2. Only ONE primary-tinted card per section (the "hero")
+3. All other cards use neutral `surface-container`
+4. Interactive feedback via `active:opacity-80`, not different bg colors
+5. Borders only on inputs, not on cards (bg contrast is sufficient)
+
 ## Usage in Components
 
 ### Tailwind Classes (Uniwind)
@@ -114,10 +166,12 @@ Variables must be wrapped in `@variant light` inside `@layer theme { :root { } }
 ```tsx
 // Backgrounds
 className="bg-background"          // page background
-className="bg-surface"             // card/sheet surface
-className="bg-surface-container"   // subtle elevated container
-className="bg-primary"             // primary accent
-className="bg-primary-container"   // soft primary
+className="bg-surface"             // sheet surfaces
+className="bg-surface-container"   // neutral cards & lists
+className="bg-surface-container-high" // nested badges/chips
+className="bg-primary/10"          // hero/action cards
+className="bg-primary"             // primary accent (buttons)
+className="bg-primary-container"   // soft primary (large areas)
 
 // Text
 className="text-on-background"     // primary text
@@ -128,17 +182,14 @@ className="text-error"             // error text
 
 // Borders
 className="border-outline"         // default border
-className="border-outline-variant" // subtle border
-
-// Cards (M3 style)
-className="bg-card rounded-2xl p-4 border border-outline-variant"
+className="border-outline-variant" // subtle border (inputs only)
 
 // Buttons
 className="bg-primary rounded-full px-6 py-3"
 className="text-on-primary font-medium"
 
 // Input fields
-className="bg-surface border border-outline rounded-xl px-4 py-3"
+className="bg-surface border border-outline-variant rounded-md px-5 py-3.5"
 
 // Status badges
 className="bg-success/15 text-success rounded-full px-3 py-1"

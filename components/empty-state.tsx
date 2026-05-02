@@ -19,8 +19,8 @@ export function EmptyState({
   onAction,
 }: EmptyStateProps) {
   return (
-    <View className="rounded-2xl bg-surface-container py-12 px-8 items-center">
-      <View className="h-14 w-14 items-center justify-center rounded-full bg-primary/10 mb-4">
+    <View className="rounded-2xl bg-primary/10 py-12 px-8 items-center">
+      <View className="h-14 w-14 items-center justify-center rounded-full bg-primary/15 mb-4">
         {icon}
       </View>
       <Typography variant="title-large" bold className="text-center">
