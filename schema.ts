@@ -23,6 +23,7 @@ const schema = {
   }),
   submissions: s.table({
     protocolId: s.ref("protocols"),
+    date: s.timestamp(),
     towerId: s.ref("towers"),
     organizationId: s.ref("organizations"),
     status: s.enum("open", "ongoing", "completed"),

@@ -1,8 +1,14 @@
+import { useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
 import { useAll, useDb } from "jazz-tools/react-native";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { IconDiamond, IconFileExport } from "@tabler/icons-react-native";
+import {
+  IconDiamond,
+  IconFileExport,
+  IconFilePlus,
+  IconFileCheck,
+} from "@tabler/icons-react-native";
 import { app } from "@/schema";
 import { Typography } from "@/components/typography";
 import { TowerStatusIcon } from "@/components/tower-status-icon";
@@ -10,6 +16,8 @@ import { Spacer } from "@/components/spacer";
 import { SectionHeader } from "@/components/section-header";
 import { Button } from "@/components/button";
 import { Divider } from "@/components/divider";
+import { EmptyState } from "@/components/empty-state";
+import { TowerdayGuards } from "@/components/towerday-guards";
 import { useUser } from "@/hooks/use-user";
 
 type TowerStatus =
@@ -30,29 +38,53 @@ export default function TowerDetailScreen() {
   const db = useDb();
   const { isAdmin } = useUser();
 
+  const { todayStart, tomorrowStart } = useMemo(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    return { todayStart: start.getTime(), tomorrowStart: end.getTime() };
+  }, []);
+
+  // Query 1: Tower with location, organization, and today's submissions
   const towers = useAll(
     id
       ? app.towers.where({ id }).include({
           location: true,
           organization: true,
+          submissionsViaTower: app.submissions.where({
+            date: { gte: todayStart, lt: tomorrowStart },
+          }),
         })
       : undefined,
   );
   const tower = towers?.[0];
+  const submissions = tower?.submissionsViaTower ?? [];
 
+  // Query 2: Today's towerday with guards (separate for reactivity)
   const towerdays = useAll(
     tower
-      ? app.towerdays.where({ towerId: tower.id })
+      ? app.towerdays
+          .where({
+            towerId: tower.id,
+            date: { gte: todayStart, lt: tomorrowStart },
+          })
+          .include({
+            guardsViaTowerday: true,
+          })
       : undefined,
   );
+  const towerday = towerdays?.[0];
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const towerday = towerdays?.find((td) => {
-    const tdDate = new Date(td.date);
-    tdDate.setHours(0, 0, 0, 0);
-    return tdDate.getTime() === today.getTime();
-  });
+  const createTowerday = () => {
+    if (!tower) return;
+    db.insert(app.towerdays, {
+      towerId: tower.id,
+      organizationId: tower.organizationId,
+      date: todayStart,
+      isCompleted: false,
+    });
+  };
 
   if (!tower) {
     return null;
@@ -157,6 +189,48 @@ export default function TowerDetailScreen() {
           </Typography>
         </Button>
       </View>
+
+      <Spacer size="section" />
+
+      <SectionHeader>Turmbuch</SectionHeader>
+
+      <Spacer size="item" />
+
+      {!towerday ? (
+        <EmptyState
+          icon={<IconFilePlus size={28} color="#008CCD" />}
+          title="Kein Turmbuch"
+          description="Für heute wurde noch kein Turmbuch angelegt."
+          actionLabel="Turmbuch erstellen"
+          onAction={createTowerday}
+        />
+      ) : (
+        <TowerdayGuards
+          towerdayId={towerday.id}
+          organizationId={tower.organizationId}
+          guards={(towerday.guardsViaTowerday ?? []).map((g) => ({
+            id: g.id,
+            name: g.name,
+            role: g.role,
+          }))}
+        />
+      )}
+
+      <Spacer size="section" />
+
+      <SectionHeader>Heutige Protokolle</SectionHeader>
+
+      <Spacer size="item" />
+
+      {!submissions || submissions.length === 0 ? (
+        <EmptyState
+          icon={<IconFileCheck size={28} color="#008CCD" />}
+          title="Keine Protokolle"
+          description="Für den heutigen Turmtag wurden noch keine Protokolle erstellt."
+          actionLabel="Protokoll erstellen"
+          onAction={() => {}}
+        />
+      ) : null}
 
       <TrueSheet
         name="tower-change-status"
