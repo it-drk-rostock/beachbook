@@ -8,6 +8,8 @@ import {
   IconFileExport,
   IconFilePlus,
   IconFileCheck,
+  IconShieldCheck,
+  IconLock,
 } from "@tabler/icons-react-native";
 import { app } from "@/schema";
 import { Typography } from "@/components/typography";
@@ -231,6 +233,46 @@ export default function TowerDetailScreen() {
           actionLabel="Turmbuch erstellen"
           onAction={createTowerday}
         />
+      ) : towerday.isCompleted ? (
+        <>
+          <View className="rounded-2xl bg-surface-container py-12 px-8 items-center">
+            <View className="h-16 w-16 items-center justify-center rounded-2xl bg-success/15 mb-4">
+              <IconShieldCheck size={32} color="#006D3B" />
+            </View>
+            <Typography variant="title-large" bold className="text-center">
+              Turmbuch abgeschlossen
+            </Typography>
+            <Typography
+              variant="body-medium"
+              className="text-on-surface-variant text-center mt-2 leading-5"
+            >
+              Das Turmbuch für heute wurde erfolgreich abgeschlossen und
+              gesperrt.
+            </Typography>
+            <Spacer size="item" />
+            <View className="rounded-full bg-error/15 px-3 py-1 flex-row items-center gap-1.5">
+              <IconLock size={14} color="#BA1A1A" />
+              <Typography variant="label-large" bold className="text-error">
+                Gesperrt
+              </Typography>
+            </View>
+          </View>
+          <Spacer size="item" />
+          <Button
+            variant="outline"
+            fullWidth
+            onPress={() =>
+              db.update(app.towerdays, towerday.id, { isCompleted: false })
+            }
+          >
+            <View className="flex-row items-center gap-2">
+              <IconLock size={18} color="#008CCD" />
+              <Typography variant="label-large" bold className="text-primary">
+                Turmbuch wieder öffnen
+              </Typography>
+            </View>
+          </Button>
+        </>
       ) : (
         <>
           <TowerdayGuards
@@ -282,6 +324,20 @@ export default function TowerDetailScreen() {
               windDirection: w.windDirection,
             }))}
           />
+
+          <Spacer size="section" />
+
+          <Pressable
+            className="w-full flex-row items-center justify-center gap-2 rounded-full bg-success px-6 py-4 active:opacity-90"
+            onPress={() =>
+              db.update(app.towerdays, towerday.id, { isCompleted: true })
+            }
+          >
+            <IconShieldCheck size={20} color="#FFFFFF" />
+            <Typography variant="label-large" bold className="text-on-primary">
+              Turmbuch abschließen
+            </Typography>
+          </Pressable>
         </>
       )}
 
