@@ -18,6 +18,7 @@ import { Button } from "@/components/button";
 import { Divider } from "@/components/divider";
 import { EmptyState } from "@/components/empty-state";
 import { TowerdayGuards } from "@/components/towerday-guards";
+import { TowerdayTodos } from "@/components/towerday-todos";
 import { useUser } from "@/hooks/use-user";
 
 type TowerStatus =
@@ -71,6 +72,7 @@ export default function TowerDetailScreen() {
           })
           .include({
             guardsViaTowerday: true,
+            todosViaTowerday: true,
           })
       : undefined,
   );
@@ -205,15 +207,30 @@ export default function TowerDetailScreen() {
           onAction={createTowerday}
         />
       ) : (
-        <TowerdayGuards
-          towerdayId={towerday.id}
-          organizationId={tower.organizationId}
-          guards={(towerday.guardsViaTowerday ?? []).map((g) => ({
-            id: g.id,
-            name: g.name,
-            role: g.role,
-          }))}
-        />
+        <>
+          <TowerdayGuards
+            towerdayId={towerday.id}
+            organizationId={tower.organizationId}
+            guards={(towerday.guardsViaTowerday ?? []).map((g) => ({
+              id: g.id,
+              name: g.name,
+              role: g.role,
+            }))}
+          />
+
+          <Spacer size="group" />
+
+          <TowerdayTodos
+            towerdayId={towerday.id}
+            organizationId={tower.organizationId}
+            todos={(towerday.todosViaTowerday ?? []).map((t) => ({
+              id: t.id,
+              title: t.title,
+              commment: t.commment,
+              isCompleted: t.isCompleted,
+            }))}
+          />
+        </>
       )}
 
       <Spacer size="section" />

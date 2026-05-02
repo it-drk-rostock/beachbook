@@ -204,7 +204,7 @@ export function TowerdayGuards({
 
       <Spacer size="item" />
 
-      {regularGuards.length > 0 && (
+      {regularGuards.length > 0 ? (
         <>
           <View className="rounded-2xl bg-surface-container overflow-hidden">
             {regularGuards.map((guard, index) => (
@@ -220,6 +220,18 @@ export function TowerdayGuards({
                 {index < regularGuards.length - 1 && <Divider />}
               </View>
             ))}
+          </View>
+          <Spacer size="item" />
+        </>
+      ) : (
+        <>
+          <View className="rounded-2xl bg-surface-container p-4">
+            <Typography
+              variant="body-large"
+              className="text-on-surface-variant"
+            >
+              Keine Wachgänger vorhanden
+            </Typography>
           </View>
           <Spacer size="item" />
         </>
