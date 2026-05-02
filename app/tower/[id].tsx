@@ -19,6 +19,7 @@ import { Divider } from "@/components/divider";
 import { EmptyState } from "@/components/empty-state";
 import { TowerdayGuards } from "@/components/towerday-guards";
 import { TowerdayTodos } from "@/components/towerday-todos";
+import { TowerdayIncidents } from "@/components/towerday-incidents";
 import { useUser } from "@/hooks/use-user";
 
 type TowerStatus =
@@ -73,6 +74,7 @@ export default function TowerDetailScreen() {
           .include({
             guardsViaTowerday: true,
             todosViaTowerday: true,
+            incidentsViaTowerday: true,
           })
       : undefined,
   );
@@ -134,6 +136,27 @@ export default function TowerDetailScreen() {
               className="text-primary uppercase"
             >
               Angemeldet als Admin
+            </Typography>
+          </View>
+        )}
+        {towerday ? (
+          <View className="rounded-full bg-primary/10 px-2.5 py-1">
+            <Typography variant="label-small" bold className="text-primary">
+              {new Date(towerday.date).toLocaleDateString("de-DE", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </Typography>
+          </View>
+        ) : (
+          <View className="rounded-full border border-outline-variant px-2.5 py-1">
+            <Typography
+              variant="label-small"
+              bold
+              className="text-on-surface-variant"
+            >
+              Datum ausstehend
             </Typography>
           </View>
         )}
@@ -228,6 +251,18 @@ export default function TowerDetailScreen() {
               title: t.title,
               commment: t.commment,
               isCompleted: t.isCompleted,
+            }))}
+          />
+
+          <Spacer size="group" />
+
+          <TowerdayIncidents
+            towerdayId={towerday.id}
+            organizationId={tower.organizationId}
+            incidents={(towerday.incidentsViaTowerday ?? []).map((i) => ({
+              id: i.id,
+              description: i.description,
+              dateTime: i.dateTime,
             }))}
           />
         </>
