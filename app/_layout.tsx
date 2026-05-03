@@ -107,8 +107,7 @@ function RootLayoutNav() {
           <Stack.Screen
             name="submission/[id]"
             options={{
-              headerShown: true,
-              headerTitle: "Organisation",
+              headerTitle: "Einreichung",
               headerShadowVisible: false,
             }}
           />

@@ -28,8 +28,8 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, { bg: string; text: string }> = {
-  open: { bg: "bg-warning/15", text: "text-warning" },
-  ongoing: { bg: "bg-primary/10", text: "text-primary" },
+  open: { bg: "bg-on-surface/10", text: "text-on-surface-variant" },
+  ongoing: { bg: "bg-warning/15", text: "text-warning" },
   completed: { bg: "bg-success/15", text: "text-success" },
 };
 

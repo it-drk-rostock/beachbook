@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
 import { useAll, useDb } from "jazz-tools/react-native";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
@@ -60,9 +60,9 @@ export default function TowerDetailScreen() {
       ? app.towers.where({ id }).include({
           location: true,
           organization: true,
-          submissionsViaTower: app.submissions.where({
-            date: { gte: todayStart, lt: tomorrowStart },
-          }),
+          submissionsViaTower: app.submissions
+            .where({ date: { gte: todayStart, lt: tomorrowStart } })
+            .include({ protocol: true }),
         })
       : undefined,
   );
@@ -88,6 +88,14 @@ export default function TowerDetailScreen() {
   );
   const towerday = towerdays?.[0];
 
+  const router = useRouter();
+
+  const protocols = useAll(
+    tower
+      ? app.protocols.where({ organizationId: tower.organizationId })
+      : undefined,
+  );
+
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 30_000);
@@ -96,7 +104,10 @@ export default function TowerDetailScreen() {
 
   const { currentDutyNames, currentPreparedNames } = useMemo(() => {
     if (!towerday)
-      return { currentDutyNames: [] as string[], currentPreparedNames: [] as string[] };
+      return {
+        currentDutyNames: [] as string[],
+        currentPreparedNames: [] as string[],
+      };
 
     const current = new Date(now);
     const mins = current.getMinutes();
@@ -111,8 +122,7 @@ export default function TowerDetailScreen() {
     const overlapping = shifts.filter((s) => {
       const start =
         typeof s.start === "number" ? s.start : new Date(s.start).getTime();
-      const end =
-        typeof s.end === "number" ? s.end : new Date(s.end).getTime();
+      const end = typeof s.end === "number" ? s.end : new Date(s.end).getTime();
       return start < windowEnd && end > windowStart;
     });
 
@@ -125,6 +135,23 @@ export default function TowerDetailScreen() {
         .map((s) => nameMap.get(s.guardId) ?? "–"),
     };
   }, [towerday, now]);
+
+  const createSubmission = async (protocolId: string) => {
+    if (!tower) return;
+    const result = db.insert(app.submissions, {
+      protocolId,
+      towerId: tower.id,
+      organizationId: tower.organizationId,
+      date: Date.now(),
+      status: "open" as const,
+      data: {},
+    });
+
+    const submissionId = result.value.id;
+    await TrueSheet.dismiss("tower-select-protocol");
+
+    router.push(`/submission/${submissionId}`);
+  };
 
   const createTowerday = () => {
     if (!tower) return;
@@ -293,7 +320,12 @@ export default function TowerDetailScreen() {
       <Spacer size="item" />
 
       <View className="flex-row gap-3">
-        <Button variant="filled" size="md" className="flex-1">
+        <Button
+          variant="filled"
+          size="md"
+          className="flex-1"
+          onPress={() => TrueSheet.present("tower-select-protocol")}
+        >
           <IconFileExport size={18} color="#FFFFFF" />
           <Typography
             variant="label-large"
@@ -310,11 +342,7 @@ export default function TowerDetailScreen() {
           onPress={() => TrueSheet.present("tower-change-status")}
         >
           <TowerStatusIcon status={tower.status} size={18} />
-          <Typography
-            variant="label-large"
-            bold
-            className="text-primary ml-2"
-          >
+          <Typography variant="label-large" bold className="text-primary ml-2">
             Status
           </Typography>
         </Button>
@@ -395,8 +423,12 @@ export default function TowerDetailScreen() {
               id: s.id,
               guardId: s.guardId,
               type: s.type,
-              start: typeof s.start === "number" ? s.start : new Date(s.start).getTime(),
-              end: typeof s.end === "number" ? s.end : new Date(s.end).getTime(),
+              start:
+                typeof s.start === "number"
+                  ? s.start
+                  : new Date(s.start).getTime(),
+              end:
+                typeof s.end === "number" ? s.end : new Date(s.end).getTime(),
             }))}
             guards={(towerday.guardsViaTowerday ?? []).map((g) => ({
               id: g.id,
@@ -473,9 +505,73 @@ export default function TowerDetailScreen() {
           title="Keine Protokolle"
           description="Für den heutigen Turmtag wurden noch keine Protokolle erstellt."
           actionLabel="Protokoll erstellen"
-          onAction={() => {}}
+          onAction={() => TrueSheet.present("tower-select-protocol")}
         />
-      ) : null}
+      ) : (
+        <View className="gap-2">
+          {submissions.map((sub) => {
+            const colors = {
+              open: {
+                bg: "bg-on-surface/10",
+                text: "text-on-surface-variant",
+                label: "Offen",
+              },
+              ongoing: {
+                bg: "bg-warning/15",
+                text: "text-warning",
+                label: "In Bearbeitung",
+              },
+              completed: {
+                bg: "bg-success/15",
+                text: "text-success",
+                label: "Abgeschlossen",
+              },
+            }[sub.status] ?? {
+              bg: "bg-on-surface/10",
+              text: "text-on-surface-variant",
+              label: sub.status,
+            };
+
+            return (
+              <Pressable
+                key={sub.id}
+                className="rounded-2xl bg-surface-container p-4 active:opacity-80"
+                onPress={() => router.push(`/submission/${sub.id}` as any)}
+              >
+                <View className="flex-row items-center justify-between">
+                  <View className="mr-3 flex-1">
+                    <Typography variant="title-medium" bold>
+                      {sub.protocol?.name ?? "–"}
+                    </Typography>
+                  </View>
+                  <View className={`rounded-full px-2.5 py-0.5 ${colors.bg}`}>
+                    <Typography
+                      variant="label-small"
+                      bold
+                      className={colors.text}
+                    >
+                      {colors.label}
+                    </Typography>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })}
+          <Spacer size="compact" />
+          <Button
+            variant="light"
+            fullWidth
+            onPress={() => TrueSheet.present("tower-select-protocol")}
+          >
+            <View className="flex-row items-center gap-2">
+              <IconFilePlus size={18} color="#008CCD" />
+              <Typography variant="label-large" bold className="text-primary">
+                Weiteres Protokoll
+              </Typography>
+            </View>
+          </Button>
+        </View>
+      )}
 
       <TrueSheet
         name="tower-change-status"
@@ -521,6 +617,69 @@ export default function TowerDetailScreen() {
             variant="subtle"
             fullWidth
             onPress={() => TrueSheet.dismiss("tower-change-status")}
+          >
+            Abbrechen
+          </Button>
+        </View>
+      </TrueSheet>
+
+      {/* Protocol selection sheet */}
+      <TrueSheet
+        name="tower-select-protocol"
+        detents={["auto", 0.7]}
+        cornerRadius={24}
+        grabber
+        backgroundColor="#FFFFFF"
+      >
+        <View style={{ padding: 24, paddingTop: 8 }}>
+          <Spacer size="item" />
+          <Typography variant="title-large" bold>
+            Protokoll auswählen
+          </Typography>
+          <Spacer size="group" />
+          {!protocols || protocols.length === 0 ? (
+            <View className="rounded-2xl bg-surface-container p-4">
+              <Typography
+                variant="body-large"
+                className="text-on-surface-variant"
+              >
+                Keine Protokolle vorhanden
+              </Typography>
+            </View>
+          ) : (
+            <View className="rounded-2xl bg-surface-container overflow-hidden">
+              {protocols.map((protocol, index) => (
+                <View key={protocol.id}>
+                  <Pressable
+                    className="p-4 active:opacity-70"
+                    onPress={() => createSubmission(protocol.id)}
+                  >
+                    <Typography variant="body-large" bold>
+                      {protocol.name}
+                    </Typography>
+                    {protocol.description ? (
+                      <>
+                        <Spacer size="inline" />
+                        <Typography
+                          variant="body-small"
+                          className="text-on-surface-variant"
+                          numberOfLines={1}
+                        >
+                          {protocol.description}
+                        </Typography>
+                      </>
+                    ) : null}
+                  </Pressable>
+                  {index < protocols.length - 1 && <Divider />}
+                </View>
+              ))}
+            </View>
+          )}
+          <Spacer size="group" />
+          <Button
+            variant="subtle"
+            fullWidth
+            onPress={() => TrueSheet.dismiss("tower-select-protocol")}
           >
             Abbrechen
           </Button>
