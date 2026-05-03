@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAll } from "jazz-tools/react-native";
 import { FlashList } from "@shopify/flash-list";
 import { TabView, TabBar } from "react-native-tab-view";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   IconClipboardList,
   IconClipboardCheck,
@@ -15,6 +16,10 @@ import { Spacer } from "@/components/spacer";
 import { EmptyState } from "@/components/empty-state";
 import { useUser } from "@/hooks/use-user";
 import { StyledSafeAreaView } from "@/components/styled-safe-area-view";
+import {
+  ProtocolForm,
+  type ProtocolData,
+} from "@/components/protocol-form";
 
 const statusLabels: Record<string, string> = {
   open: "Offen",
@@ -28,15 +33,30 @@ const statusColors: Record<string, { bg: string; text: string }> = {
   completed: { bg: "bg-success/15", text: "text-success" },
 };
 
-function ProtocolsTab() {
+function ProtocolsTab({
+  onSelectProtocol,
+}: {
+  onSelectProtocol: (p: ProtocolData) => void;
+}) {
   const { member } = useUser();
-  const router = useRouter();
+  const { q } = useLocalSearchParams<{ q?: string }>();
 
   const protocols = useAll(
     member
       ? app.protocols.where({ organizationId: member.organizationId })
       : undefined,
   );
+
+  const filtered = useMemo(() => {
+    if (!protocols) return [];
+    if (!q || q.trim() === "") return protocols;
+    const lower = q.toLowerCase();
+    return protocols.filter(
+      (p) =>
+        p.name.toLowerCase().includes(lower) ||
+        p.description?.toLowerCase().includes(lower),
+    );
+  }, [protocols, q]);
 
   if (protocols && protocols.length === 0) {
     return (
@@ -45,6 +65,20 @@ function ProtocolsTab() {
           icon={<IconClipboardList size={28} color="#008CCD" />}
           title="Keine Protokolle"
           description="Es wurden noch keine Protokolle für diese Organisation erstellt."
+          actionLabel="Protokoll erstellen"
+          onAction={() => TrueSheet.present("create-protocol")}
+        />
+      </View>
+    );
+  }
+
+  if (protocols && filtered.length === 0 && q) {
+    return (
+      <View className="flex-1 bg-background px-6 pt-6">
+        <EmptyState
+          icon={<IconClipboardList size={28} color="#008CCD" />}
+          title="Keine Treffer"
+          description={`Kein Protokoll gefunden für „${q}".`}
         />
       </View>
     );
@@ -53,17 +87,23 @@ function ProtocolsTab() {
   return (
     <View className="flex-1 bg-background">
       <FlashList
-        data={protocols ?? []}
+        data={filtered}
         keyExtractor={(item) => item.id}
         contentContainerClassName="px-6 py-4"
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
         renderItem={({ item }) => (
           <Pressable
             className="rounded-2xl bg-surface-container p-4 active:opacity-80"
-            onPress={() => router.push(`/protocol/${item.id}` as any)}
+            onPress={() =>
+              onSelectProtocol({
+                id: item.id,
+                name: item.name,
+                description: item.description ?? null,
+              })
+            }
           >
             <View className="flex-row items-center justify-between">
-              <View className="flex-1 mr-3">
+              <View className="mr-3 flex-1">
                 <Typography variant="title-medium" bold>
                   {item.name}
                 </Typography>
@@ -148,7 +188,7 @@ function SubmissionsTab() {
               onPress={() => router.push(`/submission/${item.id}` as any)}
             >
               <View className="flex-row items-start justify-between">
-                <View className="flex-1 mr-3">
+                <View className="mr-3 flex-1">
                   <Typography variant="title-medium" bold>
                     {item.protocol?.name ?? "–"}
                   </Typography>
@@ -189,21 +229,6 @@ function SubmissionsTab() {
   );
 }
 
-const renderScene = ({
-  route,
-}: {
-  route: { key: string };
-}) => {
-  switch (route.key) {
-    case "protocols":
-      return <ProtocolsTab />;
-    case "submissions":
-      return <SubmissionsTab />;
-    default:
-      return null;
-  }
-};
-
 const routes = [
   { key: "protocols", title: "Protokolle" },
   { key: "submissions", title: "Einreichungen" },
@@ -212,6 +237,47 @@ const routes = [
 export default function ProtocolsScreen() {
   const layout = useWindowDimensions();
   const [index, setIndex] = useState(0);
+  const { member } = useUser();
+  const router = useRouter();
+  const [selectedProtocol, setSelectedProtocol] = useState<ProtocolData | null>(
+    null,
+  );
+
+  const handleSelectProtocol = (protocol: ProtocolData) => {
+    setSelectedProtocol(protocol);
+    TrueSheet.present("edit-protocol");
+  };
+
+  const handleCreated = async () => {
+    await TrueSheet.dismiss("create-protocol");
+  };
+
+  const handleEditSaved = async () => {
+    await TrueSheet.dismiss("edit-protocol");
+    setSelectedProtocol(null);
+  };
+
+  const handleDeleted = async () => {
+    await TrueSheet.dismiss("edit-protocol");
+    setSelectedProtocol(null);
+  };
+
+  const handleOpenDesigner = async (id: string) => {
+    await TrueSheet.dismiss("edit-protocol");
+    setSelectedProtocol(null);
+    router.push(`/protocol/${id}` as any);
+  };
+
+  const renderScene = ({ route }: { route: { key: string } }) => {
+    switch (route.key) {
+      case "protocols":
+        return <ProtocolsTab onSelectProtocol={handleSelectProtocol} />;
+      case "submissions":
+        return <SubmissionsTab />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <StyledSafeAreaView className="flex-1 bg-background">
@@ -254,6 +320,38 @@ export default function ProtocolsScreen() {
           />
         )}
       />
+
+      {/* Create Protocol Sheet */}
+      <TrueSheet
+        name="create-protocol"
+        detents={["auto"]}
+        cornerRadius={24}
+        backgroundColor="#fff"
+      >
+        <ProtocolForm
+          organizationId={member?.organizationId ?? ""}
+          onDismiss={() => TrueSheet.dismiss("create-protocol")}
+          onSaved={handleCreated}
+        />
+      </TrueSheet>
+
+      {/* Edit Protocol Sheet */}
+      <TrueSheet
+        name="edit-protocol"
+        detents={["auto"]}
+        cornerRadius={24}
+        backgroundColor="#fff"
+        onDidDismiss={() => setSelectedProtocol(null)}
+      >
+        <ProtocolForm
+          organizationId={member?.organizationId ?? ""}
+          protocol={selectedProtocol}
+          onDismiss={() => TrueSheet.dismiss("edit-protocol")}
+          onSaved={handleEditSaved}
+          onDeleted={handleDeleted}
+          onOpenDesigner={handleOpenDesigner}
+        />
+      </TrueSheet>
     </StyledSafeAreaView>
   );
 }
