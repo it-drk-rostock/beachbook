@@ -100,8 +100,7 @@ function RootLayoutNav() {
           <Stack.Screen
             name="protocol/[id]"
             options={{
-              headerShown: true,
-              headerTitle: "Organisation",
+              headerTitle: "Protokoll Designer",
               headerShadowVisible: false,
             }}
           />

@@ -6,15 +6,9 @@ export const unstable_settings = {
 
 export default function ProtocolLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen
-        name="edit"
-        options={{
-          headerTitle: "Protokoll bearbeiten",
-          headerShadowVisible: false,
-        }}
-      />
+      <Stack.Screen name="edit" />
     </Stack>
   );
 }
