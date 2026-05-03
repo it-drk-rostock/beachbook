@@ -20,6 +20,7 @@ import { Button } from "@/components/button";
 import { Divider } from "@/components/divider";
 import { EmptyState } from "@/components/empty-state";
 import { TowerdayGuards } from "@/components/towerday-guards";
+import { TowerdayDienstplan } from "@/components/towerday-dienstplan";
 import { TowerdayTodos } from "@/components/towerday-todos";
 import { TowerdayIncidents } from "@/components/towerday-incidents";
 import { TowerdayWeather } from "@/components/towerday-weather";
@@ -76,6 +77,7 @@ export default function TowerDetailScreen() {
           })
           .include({
             guardsViaTowerday: true,
+            shiftsViaTowerday: true,
             todosViaTowerday: true,
             incidentsViaTowerday: true,
             weatherViaTowerday: true,
@@ -278,6 +280,25 @@ export default function TowerDetailScreen() {
           <TowerdayGuards
             towerdayId={towerday.id}
             organizationId={tower.organizationId}
+            guards={(towerday.guardsViaTowerday ?? []).map((g) => ({
+              id: g.id,
+              name: g.name,
+              role: g.role,
+            }))}
+          />
+
+          <Spacer size="group" />
+
+          <TowerdayDienstplan
+            towerdayId={towerday.id}
+            organizationId={tower.organizationId}
+            shifts={(towerday.shiftsViaTowerday ?? []).map((s) => ({
+              id: s.id,
+              guardId: s.guardId,
+              type: s.type,
+              start: typeof s.start === "number" ? s.start : new Date(s.start).getTime(),
+              end: typeof s.end === "number" ? s.end : new Date(s.end).getTime(),
+            }))}
             guards={(towerday.guardsViaTowerday ?? []).map((g) => ({
               id: g.id,
               name: g.name,

@@ -58,6 +58,7 @@ const schema = {
     towerdayId: s.ref("towerdays"),
     organizationId: s.ref("organizations"),
     guardId: s.ref("guards"),
+    type: s.enum("duty", "prepared"),
     start: s.timestamp(),
     end: s.timestamp(),
   }),

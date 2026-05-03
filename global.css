@@ -35,6 +35,13 @@
   --color-success: #006d3b;
   --color-warning: #7b5800;
 
+  --color-duty: #2e7d32;
+  --color-duty-container: #a5d6a7;
+  --color-on-duty-container: #1b5e20;
+  --color-prepared: #f57f17;
+  --color-prepared-container: #ffe082;
+  --color-on-prepared-container: #3e2723;
+
   --color-card: #ffffff;
   --color-card-foreground: #191c20;
 
