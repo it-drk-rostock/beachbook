@@ -1,5 +1,5 @@
 import { Pressable, View } from "react-native";
-import { IconUsers } from "@tabler/icons-react-native";
+import { IconRun, IconUsers, IconWalk } from "@tabler/icons-react-native";
 import { Typography } from "@/components/typography";
 import { TowerStatusIcon } from "@/components/tower-status-icon";
 
@@ -9,6 +9,8 @@ type TowerStatus =
   | "beach_closed"
   | "closed";
 
+type TowerdayStatus = "none" | "open" | "completed";
+
 interface TowerCardProps {
   name: string;
   number: number;
@@ -17,8 +19,17 @@ interface TowerCardProps {
   status: TowerStatus;
   memberCount?: number;
   showMemberCount?: boolean;
+  towerdayStatus?: TowerdayStatus;
+  dutyNames?: string[];
+  preparedNames?: string[];
   onPress?: () => void;
 }
+
+const towerdayBadge: Record<TowerdayStatus, { bg: string; text: string; label: string }> = {
+  none: { bg: "bg-on-surface/10", text: "text-on-surface-variant", label: "Turmbuch nicht eröffnet" },
+  open: { bg: "bg-success/15", text: "text-success", label: "Turmbuch eröffnet" },
+  completed: { bg: "bg-success/15", text: "text-success", label: "Turmbuch abgeschlossen" },
+};
 
 export function TowerCard({
   name,
@@ -28,8 +39,15 @@ export function TowerCard({
   status,
   memberCount = 0,
   showMemberCount = true,
+  towerdayStatus,
+  dutyNames,
+  preparedNames,
   onPress,
 }: TowerCardProps) {
+  const badge = towerdayStatus ? towerdayBadge[towerdayStatus] : null;
+  const hasDuty = dutyNames && dutyNames.length > 0;
+  const hasPrepared = preparedNames && preparedNames.length > 0;
+
   return (
     <Pressable
       className="rounded-2xl bg-surface-container p-4 active:opacity-80"
@@ -41,11 +59,12 @@ export function TowerCard({
             {name} {number} · {locationName ?? "–"}
           </Typography>
 
-          <View className="flex-row items-center gap-2 mt-2">
+          <View className="flex-row flex-wrap items-center gap-2 mt-2">
             {main && (
               <View className="rounded-full bg-on-surface px-2.5 py-1">
                 <Typography
                   variant="label-small"
+                  bold
                   className="text-surface uppercase"
                 >
                   Hauptturm
@@ -56,9 +75,17 @@ export function TowerCard({
               <View className="rounded-full border border-outline-variant px-2.5 py-1">
                 <Typography
                   variant="label-small"
+                  bold
                   className="text-on-surface-variant uppercase"
                 >
                   Nebenturm
+                </Typography>
+              </View>
+            )}
+            {badge && (
+              <View className={`rounded-full px-2.5 py-1 ${badge.bg}`}>
+                <Typography variant="label-small" bold className={badge.text}>
+                  {badge.label}
                 </Typography>
               </View>
             )}
@@ -78,6 +105,33 @@ export function TowerCard({
 
         <TowerStatusIcon status={status} size={32} />
       </View>
+
+      {towerdayStatus === "open" && (
+        <View className="flex-row gap-2 mt-3 pt-3 border-t border-outline-variant/30">
+          <View className="flex-1 rounded-xl bg-duty-container/30 px-3 py-2">
+            <View className="flex-row items-center gap-1.5 mb-1">
+              <IconRun size={14} color="#2e7d32" />
+              <Typography variant="label-small" bold className="text-on-duty-container">
+                Im Dienst
+              </Typography>
+            </View>
+            <Typography variant="body-small" bold className="text-on-duty-container" numberOfLines={1}>
+              {hasDuty ? dutyNames.join(", ") : "–"}
+            </Typography>
+          </View>
+          <View className="flex-1 rounded-xl bg-prepared-container/30 px-3 py-2">
+            <View className="flex-row items-center gap-1.5 mb-1">
+              <IconWalk size={14} color="#f57f17" />
+              <Typography variant="label-small" bold className="text-on-prepared-container">
+                Bereitschaft
+              </Typography>
+            </View>
+            <Typography variant="body-small" bold className="text-on-prepared-container" numberOfLines={1}>
+              {hasPrepared ? preparedNames.join(", ") : "–"}
+            </Typography>
+          </View>
+        </View>
+      )}
     </Pressable>
   );
 }

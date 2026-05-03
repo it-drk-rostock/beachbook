@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
 import { useAll, useDb } from "jazz-tools/react-native";
@@ -96,11 +96,8 @@ export default function TowerDetailScreen() {
       : undefined,
   );
 
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(interval);
-  }, []);
+  const now = useMemo(() => Date.now(), []);
+
 
   const { currentDutyNames, currentPreparedNames } = useMemo(() => {
     if (!towerday)

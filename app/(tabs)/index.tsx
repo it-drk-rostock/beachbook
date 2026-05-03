@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -29,6 +30,16 @@ export default function DashboardScreen() {
   const towerIds = member?.towerIds ?? [];
   const hasTowers = towerIds.length > 0;
 
+  const { todayStart, tomorrowStart } = useMemo(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    return { todayStart: start.getTime(), tomorrowStart: end.getTime() };
+  }, []);
+
+  const now = useMemo(() => Date.now(), []);
+
   const towers = useAll(
     hasOrganization && organization
       ? app.towers.where({ organizationId: organization.id }).include({
@@ -37,7 +48,64 @@ export default function DashboardScreen() {
       : undefined,
   );
 
+  const towerdays = useAll(
+    hasOrganization && organization
+      ? app.towerdays
+          .where({
+            organizationId: organization.id,
+            date: { gte: todayStart, lt: tomorrowStart },
+          })
+          .include({
+            guardsViaTowerday: true,
+            shiftsViaTowerday: true,
+          })
+      : undefined,
+  );
+
   const myTowers = towers?.filter((t) => towerIds.includes(t.id)) ?? [];
+
+  const towerdayMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        status: "open" | "completed";
+        dutyNames: string[];
+        preparedNames: string[];
+      }
+    >();
+    if (!towerdays) return map;
+
+    const current = new Date(now);
+    const mins = current.getMinutes();
+    current.setMinutes(mins < 30 ? 0 : 30, 0, 0);
+    const windowStart = current.getTime();
+    const windowEnd = windowStart + 30 * 60 * 1000;
+
+    for (const td of towerdays) {
+      const guards = td.guardsViaTowerday ?? [];
+      const shifts = td.shiftsViaTowerday ?? [];
+      const nameMap = new Map(guards.map((g) => [g.id, g.name]));
+
+      const overlapping = shifts.filter((s) => {
+        const start =
+          typeof s.start === "number" ? s.start : new Date(s.start).getTime();
+        const end =
+          typeof s.end === "number" ? s.end : new Date(s.end).getTime();
+        return start < windowEnd && end > windowStart;
+      });
+
+      map.set(td.towerId, {
+        status: td.isCompleted ? "completed" : "open",
+        dutyNames: overlapping
+          .filter((s) => s.type === "duty")
+          .map((s) => nameMap.get(s.guardId) ?? "–"),
+        preparedNames: overlapping
+          .filter((s) => s.type === "prepared")
+          .map((s) => nameMap.get(s.guardId) ?? "–"),
+      });
+    }
+    return map;
+  }, [towerdays, now]);
 
   return (
     <StyledSafeAreaView className="flex-1 bg-background" edges={["top"]}>
@@ -103,17 +171,23 @@ export default function DashboardScreen() {
               keyExtractor={(item) => item.id}
               contentContainerClassName="px-6 pb-8"
               ItemSeparatorComponent={() => <Spacer size="compact" />}
-              renderItem={({ item }) => (
-                <TowerCard
-                  name={item.name}
-                  number={item.number}
-                  locationName={item.location?.name}
-                  main={item.main}
-                  status={item.status}
-                  showMemberCount={false}
-                  onPress={() => router.push(`/tower/${item.id}` as any)}
-                />
-              )}
+              renderItem={({ item }) => {
+                const td = towerdayMap.get(item.id);
+                return (
+                  <TowerCard
+                    name={item.name}
+                    number={item.number}
+                    locationName={item.location?.name}
+                    main={item.main}
+                    status={item.status}
+                    showMemberCount={false}
+                    towerdayStatus={td ? td.status : "none"}
+                    dutyNames={td?.dutyNames}
+                    preparedNames={td?.preparedNames}
+                    onPress={() => router.push(`/tower/${item.id}` as any)}
+                  />
+                );
+              }}
             />
           </View>
         )}
