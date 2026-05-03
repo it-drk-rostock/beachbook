@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
 import { useAll, useDb } from "jazz-tools/react-native";
@@ -10,6 +10,8 @@ import {
   IconFileCheck,
   IconShieldCheck,
   IconLock,
+  IconRun,
+  IconWalk,
 } from "@tabler/icons-react-native";
 import { app } from "@/schema";
 import { Typography } from "@/components/typography";
@@ -85,6 +87,44 @@ export default function TowerDetailScreen() {
       : undefined,
   );
   const towerday = towerdays?.[0];
+
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const { currentDutyNames, currentPreparedNames } = useMemo(() => {
+    if (!towerday)
+      return { currentDutyNames: [] as string[], currentPreparedNames: [] as string[] };
+
+    const current = new Date(now);
+    const mins = current.getMinutes();
+    current.setMinutes(mins < 30 ? 0 : 30, 0, 0);
+    const windowStart = current.getTime();
+    const windowEnd = windowStart + 30 * 60 * 1000;
+
+    const shifts = towerday.shiftsViaTowerday ?? [];
+    const guards = towerday.guardsViaTowerday ?? [];
+    const nameMap = new Map(guards.map((g) => [g.id, g.name]));
+
+    const overlapping = shifts.filter((s) => {
+      const start =
+        typeof s.start === "number" ? s.start : new Date(s.start).getTime();
+      const end =
+        typeof s.end === "number" ? s.end : new Date(s.end).getTime();
+      return start < windowEnd && end > windowStart;
+    });
+
+    return {
+      currentDutyNames: overlapping
+        .filter((s) => s.type === "duty")
+        .map((s) => nameMap.get(s.guardId) ?? "–"),
+      currentPreparedNames: overlapping
+        .filter((s) => s.type === "prepared")
+        .map((s) => nameMap.get(s.guardId) ?? "–"),
+    };
+  }, [towerday, now]);
 
   const createTowerday = () => {
     if (!tower) return;
@@ -185,6 +225,65 @@ export default function TowerDetailScreen() {
           {statusOptions.find((o) => o.value === tower.status)?.label ??
             tower.status}
         </Typography>
+      </View>
+
+      <Spacer size="item" />
+
+      <View className="flex-row gap-3">
+        <View className="flex-1 rounded-2xl bg-surface-container p-4">
+          <IconRun size={28} color="#2e7d32" />
+          <Spacer size="inline" />
+          <Typography
+            variant="label-small"
+            bold
+            className="text-duty uppercase"
+          >
+            Dienst
+          </Typography>
+          <Spacer size="inline" />
+          {currentDutyNames.length > 0 ? (
+            currentDutyNames.map((name, i) => (
+              <Typography key={i} variant="title-medium" bold>
+                {name}
+              </Typography>
+            ))
+          ) : (
+            <Typography
+              variant="title-medium"
+              bold
+              className="text-on-surface-variant"
+            >
+              –
+            </Typography>
+          )}
+        </View>
+        <View className="flex-1 rounded-2xl bg-surface-container p-4">
+          <IconWalk size={28} color="#f57f17" />
+          <Spacer size="inline" />
+          <Typography
+            variant="label-small"
+            bold
+            className="text-prepared uppercase"
+          >
+            Bereitschaft
+          </Typography>
+          <Spacer size="inline" />
+          {currentPreparedNames.length > 0 ? (
+            currentPreparedNames.map((name, i) => (
+              <Typography key={i} variant="title-medium" bold>
+                {name}
+              </Typography>
+            ))
+          ) : (
+            <Typography
+              variant="title-medium"
+              bold
+              className="text-on-surface-variant"
+            >
+              –
+            </Typography>
+          )}
+        </View>
       </View>
 
       <Spacer size="section" />
