@@ -108,6 +108,7 @@ export default function TowersScreen() {
                 main={item.main}
                 status={item.status}
                 memberCount={getMemberCount(item.id)}
+                showMemberCount
                 onPress={() => openEditTower(item)}
               />
             )}

@@ -1,5 +1,6 @@
 import { Pressable, View } from "react-native";
 import { IconRun, IconUsers, IconWalk } from "@tabler/icons-react-native";
+import { useCSSVariable } from "uniwind";
 import { Typography } from "@/components/typography";
 import { TowerStatusIcon } from "@/components/tower-status-icon";
 
@@ -25,10 +26,10 @@ interface TowerCardProps {
   onPress?: () => void;
 }
 
-const towerdayBadge: Record<TowerdayStatus, { bg: string; text: string; label: string }> = {
-  none: { bg: "bg-on-surface/10", text: "text-on-surface-variant", label: "Turmbuch nicht eröffnet" },
-  open: { bg: "bg-success/15", text: "text-success", label: "Turmbuch eröffnet" },
-  completed: { bg: "bg-success/15", text: "text-success", label: "Turmbuch abgeschlossen" },
+const towerdayBadge: Record<TowerdayStatus, { label: string }> = {
+  none: { label: "Turmbuch nicht eröffnet" },
+  open: { label: "Turmbuch eröffnet" },
+  completed: { label: "Turmbuch abgeschlossen" },
 };
 
 export function TowerCard({
@@ -44,13 +45,15 @@ export function TowerCard({
   preparedNames,
   onPress,
 }: TowerCardProps) {
+  const memberIconColor =
+    (useCSSVariable("--color-on-surface-variant") as string) || "#6b7280";
   const badge = towerdayStatus ? towerdayBadge[towerdayStatus] : null;
   const hasDuty = dutyNames && dutyNames.length > 0;
   const hasPrepared = preparedNames && preparedNames.length > 0;
 
   return (
     <Pressable
-      className="rounded-2xl bg-surface-container p-4 active:opacity-80"
+      className="rounded-2xl border border-outline-variant bg-surface p-4 active:opacity-80"
       onPress={onPress}
     >
       <View className="flex-row items-center justify-between">
@@ -83,15 +86,15 @@ export function TowerCard({
               </View>
             )}
             {badge && (
-              <View className={`rounded-full px-2.5 py-1 ${badge.bg}`}>
-                <Typography variant="label-small" bold className={badge.text}>
+              <View className="rounded-full bg-badge px-2.5 py-1">
+                <Typography variant="label-small" bold className="text-on-badge">
                   {badge.label}
                 </Typography>
               </View>
             )}
             {showMemberCount && (
               <View className="flex-row items-center gap-1">
-                <IconUsers size={14} color="#41484F" />
+                <IconUsers size={14} color={memberIconColor} />
                 <Typography
                   variant="label-small"
                   className="text-on-surface-variant"
@@ -107,7 +110,7 @@ export function TowerCard({
       </View>
 
       {towerdayStatus === "open" && (
-        <View className="flex-row gap-2 mt-3 pt-3 border-t border-outline-variant/30">
+        <View className="mt-3 flex-row gap-2 border-t border-outline-variant pt-3">
           <View className="flex-1 rounded-xl bg-duty-container/30 px-3 py-2">
             <View className="flex-row items-center gap-1.5 mb-1">
               <IconRun size={14} color="#2e7d32" />

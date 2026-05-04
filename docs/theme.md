@@ -1,410 +1,133 @@
-# BeachBook - Theme
+# BeachBook — Theme (Clean-Core)
 
-## Design System
+## Design system
 
-BeachBook follows **Material Design 3 (Material You)** guidelines adapted for React Native via Uniwind CSS variables.
+BeachBook uses the **Wasserwacht Clean-Core** direction: high-contrast readability, pure white surfaces, **1px neutral borders** instead of tinted “layers” or shadows, and **`#008ccd`** reserved for primary actions and links. Tokens live in [`global.css`](../global.css) as Uniwind `@theme` entries.
+
+### Principles
+
+- **Canvas:** `#FFFFFF` only — no dynamic Material off-whites on the main screen.
+- **Cards:** same white as the canvas; separation is **`border border-outline-variant`** (`#E5E7EB`), not background tint.
+- **Shadows:** none for product UI; depth is border-only.
+- **Primary blue:** `#008ccd` — filled primary buttons, links, active nav; not large static fills.
+- **Semantic colors:** keep **success / warning / error** for tower status, incidents, and severity. Do not replace those with brand blue.
 
 ### References
 
-- [M3 Expressive Design](https://m3.material.io/blog/building-with-m3-expressive)
-- [Dribbble: Sustainable DIY App Concept](https://dribbble.com/shots/21724086-Sustainable-DIY-App-Concept)
-- [Dribbble: Settings Page Material You](https://dribbble.com/shots/22405778-Settings-page-Material-You-Design-System)
+- [Uniwind — theming](https://docs.uniwind.dev/theming/basics)
+- [Uniwind — `@theme`](https://docs.uniwind.dev/)
 
-## Primary Color
+## Color palette
 
-```
-#008CCD — Ocean Blue
-```
+| Token | Value | Usage |
+| --- | --- | --- |
+| `--color-primary` | `#008ccd` | Primary buttons, links, interactive emphasis |
+| `--color-on-primary` | `#ffffff` | Text/icons on primary |
+| `--color-background` | `#ffffff` | Page background |
+| `--color-surface` | `#ffffff` | Sheets, inputs, card fill |
+| `--color-surface-container` | `#ffffff` | Alias aligned with cards (still use **border** on the card) |
+| `--color-on-background` | `#111827` | Primary text |
+| `--color-on-surface` | `#111827` | Primary text on surfaces |
+| `--color-on-surface-variant` | `#6b7280` | Secondary text, captions |
+| `--color-outline-variant` | `#e5e7eb` | **Default card and list stroke**, dividers, secondary button outline |
+| `--color-outline` | `#9ca3af` | Stronger strokes / icons when needed |
+| `--color-badge` | `#f3f4f6` | Low-emphasis pills, menu icon wells |
+| `--color-on-badge` | `#374151` | Text on badge surfaces |
+| `--color-surface-container-high` | `#f3f4f6` | Nested chips inside cards (same intent as badge) |
+| `--color-error` / `--color-success` / `--color-warning` | (see `global.css`) | Status and severity only |
 
-This is the brand color for BeachBook, derived from the ocean/lifeguard context.
+## CSS variables
 
-## Color Palette (M3 Tonal)
+Source of truth: [`global.css`](../global.css) `@theme { ... }`. After changing tokens, rely on Uniwind’s generated utilities (`bg-surface`, `text-on-surface-variant`, etc.).
 
-Generated from primary `#008CCD` using Material 3 color system principles.
+## Information cards
 
-### Light Theme
-
-| Token                  | Value       | Usage                                    |
-| ---------------------- | ----------- | ---------------------------------------- |
-| `--color-primary`      | `#008CCD`   | Primary buttons, active states, links    |
-| `--color-on-primary`   | `#FFFFFF`   | Text/icons on primary                    |
-| `--color-primary-container` | `#C8E6FF` | Soft primary backgrounds, chips       |
-| `--color-on-primary-container` | `#001E31` | Text on primary container          |
-| `--color-secondary`    | `#4F6070`   | Secondary actions, less prominent UI     |
-| `--color-on-secondary` | `#FFFFFF`   | Text/icons on secondary                  |
-| `--color-secondary-container` | `#D3E4F5` | Secondary backgrounds              |
-| `--color-on-secondary-container` | `#0B1D2B` | Text on secondary container       |
-| `--color-tertiary`     | `#645A7C`   | Accent elements, complementary UI        |
-| `--color-on-tertiary`  | `#FFFFFF`   | Text/icons on tertiary                   |
-| `--color-background`   | `#FFFFFF`   | Page background (all screens)            |
-| `--color-on-background`| `#191C20`   | Primary text                             |
-| `--color-surface`      | `#FFFFFF`   | Page bg, sheet surfaces                  |
-| `--color-surface-container` | `#F2F7FB` | All cards, lists, containers             |
-| `--color-surface-container-high` | `#E7F0F8` | Badges, chips, nested emphasis      |
-| `--color-on-surface`   | `#191C20`   | Text on surfaces                         |
-| `--color-surface-variant` | `#DDE3EA` | Dividers, disabled backgrounds           |
-| `--color-on-surface-variant` | `#41484F` | Secondary text, icons                |
-| `--color-outline`      | `#727980`   | Borders, dividers                        |
-| `--color-outline-variant` | `#C1C7CE` | Subtle borders                           |
-| `--color-error`        | `#BA1A1A`   | Error states, destructive actions        |
-| `--color-on-error`     | `#FFFFFF`   | Text on error                            |
-| `--color-error-container` | `#FFDAD6` | Error backgrounds                       |
-| `--color-success`      | `#006D3B`   | Success states, resolved incidents       |
-| `--color-warning`      | `#7B5800`   | Warning states, medium severity          |
-
-## CSS Variables (global.css)
-
-Variables must be wrapped in `@variant light` inside `@layer theme { :root { } }` so Uniwind resolves them at runtime.
-
-```css
-@import "tailwindcss";
-@import "uniwind";
-
-@layer theme {
-  :root {
-    @variant light {
-      --color-primary: #008CCD;
-      --color-on-primary: #FFFFFF;
-      --color-primary-container: #C8E6FF;
-      --color-on-primary-container: #001E31;
-
-      --color-secondary: #4F6070;
-      --color-on-secondary: #FFFFFF;
-      --color-secondary-container: #D3E4F5;
-      --color-on-secondary-container: #0B1D2B;
-
-      --color-tertiary: #645A7C;
-      --color-on-tertiary: #FFFFFF;
-
-      --color-background: #FFFFFF;
-      --color-on-background: #191C20;
-
-      --color-surface: #FFFFFF;
-      --color-on-surface: #191C20;
-      --color-surface-container: #F2F7FB;
-      --color-surface-container-high: #E7F0F8;
-      --color-surface-variant: #DDE3EA;
-      --color-on-surface-variant: #41484F;
-
-      --color-outline: #727980;
-      --color-outline-variant: #C1C7CE;
-
-      --color-error: #BA1A1A;
-      --color-on-error: #FFFFFF;
-      --color-error-container: #FFDAD6;
-
-      --color-success: #006D3B;
-      --color-warning: #7B5800;
-
-      --color-card: #FFFFFF;
-      --color-card-foreground: #191C20;
-
-      --color-muted: #F1F3F6;
-      --color-muted-foreground: #727980;
-
-      --color-input: #DDE3EA;
-      --color-ring: #008CCD;
-    }
-  }
-}
-```
-
-## Surface & Card Background Rules
-
-Use color to communicate **intent**, not just grouping. Two categories:
-
-### 1. Neutral containers — `bg-surface-container`
-
-For data grouping with no action emphasis. The default card background.
-
-**Use for:** Member lists, location cards, tower cards, menu lists, picker sheets, empty inline messages.
+Default pattern for lists, settings groups, tower blocks:
 
 ```tsx
-className="rounded-2xl bg-surface-container p-4"
+className="rounded-2xl border border-outline-variant bg-surface p-4"
 ```
 
-### 2. Brand emphasis — `bg-primary/10`
+- **Padding:** `p-3` (12px) or `p-4` (16px).
+- **Radius:** `rounded-xl` or `rounded-2xl` — both resolve to **12px** in theme for large surfaces; use `rounded-md` (8px) for compact fields.
 
-For hero entities and call-to-action cards that invite interaction or represent the primary entity on a screen.
+### Hero / empty states
 
-**Use for:** Organization card (hero entity), empty state cards prompting creation, action-oriented cards on the dashboard.
+Prefer **one** emphasized block per section: bordered card, optional **left accent** (`border-l-4 border-l-primary`), or light `bg-primary/10` only when it clearly invites a single primary action. Avoid stacking multiple tinted heroes.
 
-```tsx
-className="rounded-2xl bg-primary/10 p-4"
-```
+## Navigation and headers
 
-### Nested emphasis — `bg-surface-container-high`
+- **Native stack header:** white background, **bottom hairline** `1px` `#E5E7EB` (configured in `app/_layout.tsx`).
+- **In-tab titles:** [`PageHeader`](../components/page-header.tsx) — large, bold `text-on-background` (`#111827`).
 
-Only for small elements nested *inside* cards: count badges, chips, icon containers.
+## Primary CTA (buttons)
 
-```tsx
-className="rounded-full bg-surface-container-high px-2"
-```
+- **Filled:** `bg-primary` + `text-on-primary` — main submit / dispatch / “add” flows.
+- **Outline / secondary:** neutral **`border-outline-variant`**, label `text-primary` (see [`Button`](../components/button.tsx)).
+- **Subtle / text:** `text-primary` on transparent.
 
-### Summary
+## Badges and status tags
 
-| Background | Intent | Examples |
-|---|---|---|
-| `bg-surface` (white) | Page background, sheets | ScrollView, TrueSheet |
-| `bg-surface-container` | Neutral data containers | Tower card, member list, settings menu, location card |
-| `bg-surface-container-high` | Nested chips/badges inside cards | Member count pill, icon container in camera sheet |
-| `bg-primary/10` | Hero entity / call-to-action | Org card, empty state prompting creation |
-| `bg-primary/15` | Icon backgrounds inside primary cards | Icon circle in org card |
+- **Neutral info:** `bg-badge text-on-badge rounded-md px-2 py-1` (or `rounded-full` for pills).
+- **Severity / tower state:** keep `bg-success/15 text-success` (and warning/error analogs) so safety semantics stay green/amber/red.
 
-### Rules
+## Typography
 
-1. Never use more than 2 surface levels on one screen
-2. Only ONE primary-tinted card per section (the "hero")
-3. All other cards use neutral `surface-container`
-4. Interactive feedback via `active:opacity-80`, not different bg colors
-5. Borders only on inputs, not on cards (bg contrast is sufficient)
+Type scale follows Material-like steps (see [`Typography`](../components/typography.tsx)).
 
-## Usage in Components
+**Numbers:** use [`NumericText`](../components/numeric-text.tsx) (Space Mono, loaded in root layout) for timestamps, coordinates, counts, and tabular grids. For body text that is mostly prose with digits, `Typography` supports a **tabular** flag where the platform allows tabular figures.
 
-### Tailwind Classes (Uniwind)
+## Spacing and radius (theme)
 
-```tsx
-// Backgrounds
-className="bg-background"          // page background
-className="bg-surface"             // sheet surfaces
-className="bg-surface-container"   // neutral cards & lists
-className="bg-surface-container-high" // nested badges/chips
-className="bg-primary/10"          // hero/action cards
-className="bg-primary"             // primary accent (buttons)
-className="bg-primary-container"   // soft primary (large areas)
+| Utility | Role |
+| --- | --- |
+| `rounded-md` | 8px — inputs, tight blocks |
+| `rounded-lg` | 8px — shared [`Button`](../components/button.tsx), Dienstplan “+ Hinzufügen”, other compact actions |
+| `rounded-xl` / `rounded-2xl` | 12px — cards and grouped lists |
+| `rounded-full` | Optional badge/chip pills, FABs, avatars |
 
-// Text
-className="text-on-background"     // primary text
-className="text-on-surface"        // text on cards
-className="text-on-surface-variant" // secondary text
-className="text-primary"           // accent text
-className="text-error"             // error text
+## Elevation
 
-// Borders
-className="border-outline"         // default border
-className="border-outline-variant" // subtle border (inputs only)
+Do **not** use `shadow-*` on product cards. Use borders. (Exceptions like platform modals are outside this guide.)
 
-// Buttons
-className="bg-primary rounded-full px-6 py-3"
-className="text-on-primary font-medium"
-
-// Input fields
-className="bg-surface border border-outline-variant rounded-md px-5 py-3.5"
-
-// Status badges
-className="bg-success/15 text-success rounded-full px-3 py-1"
-className="bg-error/15 text-error rounded-full px-3 py-1"
-className="bg-warning/15 text-warning rounded-full px-3 py-1"
-```
-
-## Typography Scale (M3)
-
-| Style            | Class                                     | Usage                    |
-| ---------------- | ----------------------------------------- | ------------------------ |
-| Display Large    | `text-[57px] font-normal tracking-tight`  | Hero numbers             |
-| Headline Large   | `text-[32px] font-normal`                 | Page titles              |
-| Headline Medium  | `text-[28px] font-normal`                 | Section headers          |
-| Title Large      | `text-[22px] font-normal`                 | Card titles              |
-| Title Medium     | `text-base font-medium tracking-wide`     | Subtitles                |
-| Title Small      | `text-sm font-medium tracking-wide`       | Small titles             |
-| Body Large       | `text-base font-normal`                   | Primary body text        |
-| Body Medium      | `text-sm font-normal`                     | Secondary body text      |
-| Body Small       | `text-xs font-normal`                     | Captions, timestamps     |
-| Label Large      | `text-sm font-medium tracking-wide`       | Button text              |
-| Label Medium     | `text-xs font-medium tracking-wider`      | Chips, badges            |
-| Label Small      | `text-[11px] font-medium tracking-wider`  | Overlines                |
-
-## Spacing & Radius (M3)
-
-| Token       | Value  | Usage                            |
-| ----------- | ------ | -------------------------------- |
-| `rounded-sm`  | 4px  | Small elements (chips, badges)   |
-| `rounded-md`  | 8px  | Inputs, small cards              |
-| `rounded-lg`  | 12px | Medium cards                     |
-| `rounded-xl`  | 16px | Large cards, sheets              |
-| `rounded-2xl` | 20px | Primary cards                    |
-| `rounded-full`| 9999px| Buttons, FABs, avatars          |
-
-## Elevation (Surface Tint)
-
-M3 uses surface tint instead of shadows for elevation. In Uniwind, use opacity-based overlays:
-
-```tsx
-// Level 0 — Flat
-className="bg-surface"
-
-// Level 1 — Cards
-className="bg-card"
-
-// Level 2 — Raised
-className="bg-card shadow-sm"
-
-// Level 3 — Modals, sheets
-className="bg-card shadow-md"
-```
-
-## Icon Usage
-
-Tabler Icons with M3 sizing conventions:
+## Icon usage
 
 ```tsx
 import { IconLifebuoy, IconAlertTriangle } from "@tabler/icons-react-native";
 
-// Standard (24dp)
 <IconLifebuoy size={24} color="var(--color-on-surface)" />
-
-// Small (20dp)
 <IconAlertTriangle size={20} color="var(--color-on-surface-variant)" />
-
-// Large (32dp)
 <IconLifebuoy size={32} color="var(--color-primary)" />
 ```
 
-## Severity Colors
+Use **primary** icon color for interactive rows or primary actions; **on-surface-variant** for decorative / secondary icons inside neutral cards.
 
-Used for incidents and status indicators:
+## Severity and tower status
 
-| Severity   | Background            | Text               | Icon Color           |
-| ---------- | --------------------- | ------------------ | -------------------- |
-| Low        | `bg-success/15`       | `text-success`     | `text-success`       |
-| Medium     | `bg-warning/15`       | `text-warning`     | `text-warning`       |
-| High       | `bg-error/15`         | `text-error`       | `text-error`         |
-| Critical   | `bg-error`            | `text-on-error`    | `text-on-error`      |
+Unchanged from operations needs — see tables in the previous shipped docs: low/medium/high/critical backgrounds; open/closed/restricted tower colors.
 
-## Tower Status Colors
+## Spacing system
 
-| Status      | Indicator                                  |
-| ----------- | ------------------------------------------ |
-| Open        | `bg-success` dot + `text-success` label    |
-| Closed      | `bg-error` dot + `text-error` label        |
-| Restricted  | `bg-warning` dot + `text-warning` label    |
+Use `<Spacer />` between major blocks; use `gap-*` inside uniform lists. See [`Spacer`](../components/spacer.tsx).
 
-## Spacing System
+## Reusable components
 
-Use `<Spacer />` components to create consistent vertical rhythm. Never use arbitrary `mt-*` / `mb-*` on content elements -- place a `<Spacer>` between them instead.
+### `Typography`
 
-### Semantic Sizes
+[`components/typography.tsx`](../components/typography.tsx) — `variant`, `bold`, optional **`tabular`** (`tabular-nums` for aligned figures where the platform supports it).
 
-| Size        | Value   | Tailwind | When to use                                     |
-| ----------- | ------- | -------- | ----------------------------------------------- |
-| `section`   | 40px    | `h-10`   | Between major page sections                     |
-| `content`   | 32px    | `h-8`    | Between a title/header and its content area     |
-| `group`     | 24px    | `h-6`    | Between groups of related elements              |
-| `item`      | 16px    | `h-4`    | Between items within a group (default)          |
-| `compact`   | 12px    | `h-3`    | Tight spacing (e.g. between stacked buttons)    |
-| `inline`    | 8px     | `h-2`    | Minimal spacing within compact layouts          |
+### `NumericText`
 
-### Layout Ordering Convention
+[`components/numeric-text.tsx`](../components/numeric-text.tsx) — monospace numbers.
 
-A typical screen should follow this vertical flow:
+### `Button`
 
-```
-SafeAreaView
-├── BrandHeader / PageHeader
-├── Spacer size="section"          ← header → title
-├── Typography (page title)
-├── Spacer size="content"          ← title → first content
-├── Form fields / Content
-│   ├── TextInput
-│   ├── Spacer size="item"         ← between fields
-│   └── TextInput
-├── Spacer size="group"            ← fields → actions
-├── Button (primary)
-├── Spacer size="compact"          ← between buttons
-└── Button (secondary)
-```
+[`components/button.tsx`](../components/button.tsx) — `filled`, **`secondary`** (transparent + `border-primary`), `outline` (neutral border), `subtle`, `light`, `danger`, etc.
 
-### Usage
+### `TextInput`
 
-```tsx
-import { Spacer } from "@/components/spacer";
+[`components/text-input.tsx`](../components/text-input.tsx) — pass icon color `var(--color-on-surface-variant)` or `useCSSVariable("--color-on-surface-variant")`.
 
-<BrandHeader />
-<Spacer size="section" />
-<Typography variant="headline-medium" bold>Page Title</Typography>
-<Spacer size="content" />
-{/* content here */}
-<Spacer size="group" />
-<Button fullWidth>Primary Action</Button>
-<Spacer size="compact" />
-<Button variant="outline" fullWidth>Secondary Action</Button>
-```
+### `Spacer`
 
-### When to use `gap-*` instead
-
-Use `gap-*` on a parent `View` when children are uniform and repetitive (e.g. a list of cards, a row of chips). Use `<Spacer>` when different amounts of space are needed between different elements.
-
-## Reusable Components
-
-### `<Typography>`
-
-M3 type scale with optional bold. Located at `components/typography.tsx`.
-
-```tsx
-import { Typography } from "@/components/typography";
-
-<Typography variant="headline-medium" bold>Page Title</Typography>
-<Typography variant="body-large">Body text</Typography>
-<Typography variant="label-large" className="text-primary">Link</Typography>
-```
-
-| Prop        | Type                | Default       |
-| ----------- | ------------------- | ------------- |
-| `variant`   | M3 type scale key   | `body-large`  |
-| `bold`      | `boolean`           | `false`       |
-| `className` | extra Tailwind      | —             |
-
-### `<Button>`
-
-M3-style pill button. Located at `components/button.tsx`.
-
-```tsx
-import { Button } from "@/components/button";
-
-<Button fullWidth>Anmelden</Button>
-<Button variant="outline" fullWidth>Hilfe</Button>
-<Button variant="danger" size="sm">Löschen</Button>
-```
-
-| Prop            | Values                                                       | Default   |
-| --------------- | ------------------------------------------------------------ | --------- |
-| `variant`       | `filled` · `light` · `outline` · `subtle` · `danger` · `danger-light` | `filled` |
-| `size`          | `sm` · `md` · `lg`                                          | `md`      |
-| `fullWidth`     | `boolean`                                                    | `false`   |
-| `textClassName` | extra Tailwind for label                                     | —         |
-
-### `<TextInput>`
-
-Input with icon slots. Located at `components/text-input.tsx`.
-
-```tsx
-import { TextInput } from "@/components/text-input";
-import { IconLock } from "@tabler/icons-react-native";
-
-<TextInput
-  leftIcon={<IconLock size={20} color="#727980" />}
-  placeholder="Passwort"
-  secureTextEntry
-/>
-```
-
-| Prop        | Type            | Default |
-| ----------- | --------------- | ------- |
-| `size`      | `sm` · `md` · `lg` | `md`  |
-| `error`     | `boolean`       | `false` |
-| `leftIcon`  | `ReactNode`     | —       |
-| `rightIcon` | `ReactNode`     | —       |
-
-### `<Spacer>`
-
-Semantic vertical spacing. Located at `components/spacer.tsx`.
-
-```tsx
-import { Spacer } from "@/components/spacer";
-
-<Spacer size="section" />
-```
-
-| Prop   | Values                                                    | Default |
-| ------ | --------------------------------------------------------- | ------- |
-| `size` | `section` · `content` · `group` · `item` · `compact` · `inline` | `item` |
+[`components/spacer.tsx`](../components/spacer.tsx)

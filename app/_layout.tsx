@@ -52,14 +52,32 @@ export default function RootLayout() {
   );
 }
 
+const HEADER_BORDER = "#e5e7eb";
+const HEADER_ON_SURFACE = "#111827";
+
 function RootLayoutNav() {
   const session = useSession();
   const router = useRouter();
 
+  /** RN supports full ViewStyle; Expo's stack types only list backgroundColor. */
+  const stackHeaderStyle = {
+    backgroundColor: "#ffffff",
+    borderBottomWidth: 1,
+    borderBottomColor: HEADER_BORDER,
+  } as { backgroundColor?: string };
+
+  const stackHeaderDefaults = {
+    headerBackButtonDisplayMode: "minimal" as const,
+    headerShadowVisible: false,
+    headerStyle: stackHeaderStyle,
+    headerTintColor: HEADER_ON_SURFACE,
+    headerTitleStyle: { color: HEADER_ON_SURFACE },
+  };
+
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
-      <Stack screenOptions={{ headerBackButtonDisplayMode: "minimal" }}>
+      <Stack screenOptions={stackHeaderDefaults}>
         <Stack.Protected guard={false}>
           {/* Screens ONLY available when LOGGED OUT */}
           <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -71,14 +89,13 @@ function RootLayoutNav() {
             options={{
               headerShown: true,
               headerTitle: "Protokolle",
-              headerShadowVisible: false,
               headerRight: () => (
                 <IconPlus
                   onPress={async () => {
                     await TrueSheet.present("create-protocol");
                   }}
                   size={24}
-                  color="#1a1c1e"
+                  color={HEADER_ON_SURFACE}
                 />
               ),
               headerSearchBarOptions: {
@@ -94,21 +111,18 @@ function RootLayoutNav() {
             options={{
               headerShown: true,
               headerTitle: "Organisation",
-              headerShadowVisible: false,
             }}
           />
           <Stack.Screen
             name="protocol/[id]"
             options={{
               headerTitle: "Protokoll Designer",
-              headerShadowVisible: false,
             }}
           />
           <Stack.Screen
             name="submission/[id]"
             options={{
               headerTitle: "Einreichung",
-              headerShadowVisible: false,
             }}
           />
           <Stack.Screen
@@ -116,7 +130,6 @@ function RootLayoutNav() {
             options={{
               headerShown: true,
               headerTitle: "Turm",
-              headerShadowVisible: false,
             }}
           />
           <Stack.Screen
@@ -124,7 +137,6 @@ function RootLayoutNav() {
             options={{
               headerShown: true,
               headerTitle: "Account",
-              headerShadowVisible: false,
             }}
           />
           <Stack.Screen
@@ -133,13 +145,17 @@ function RootLayoutNav() {
               headerShown: true,
               headerTitle: "Türme",
               headerTransparent: true,
+              headerStyle: {
+                backgroundColor: "transparent",
+                borderBottomWidth: 0,
+              } as { backgroundColor?: string },
               headerRight: () => (
                 <IconPlus
                   onPress={async () => {
                     await TrueSheet.present("create-tower");
                   }}
                   size={24}
-                  color="#1a1c1e"
+                  color={HEADER_ON_SURFACE}
                 />
               ),
               headerSearchBarOptions: {

@@ -4,11 +4,11 @@ import { Pressable, View } from "react-native";
 import { tv, type VariantProps } from "tailwind-variants";
 
 const cardVariants = tv({
-  base: "rounded-2xl p-5 active:opacity-90",
+  base: "rounded-2xl border border-outline-variant bg-surface p-5 active:opacity-90",
   variants: {
     tone: {
-      primary: "bg-primary/10",
-      surface: "bg-surface-container",
+      primary: "border-l-4 border-l-primary",
+      surface: "",
     },
   },
   defaultVariants: {
@@ -32,7 +32,7 @@ export function EmptyStateCard({
 }: EmptyStateCardProps) {
   return (
     <Pressable className={cardVariants({ tone })} onPress={onPress}>
-      <View className="h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-3">
+      <View className="mb-3 h-12 w-12 items-center justify-center rounded-md bg-badge">
         {icon}
       </View>
       <Typography variant="title-medium" bold className="text-on-surface">

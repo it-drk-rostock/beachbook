@@ -140,7 +140,7 @@ export function TowerdayTodos({
 
       {todos.length > 0 ? (
         <>
-          <View className="rounded-2xl bg-surface-container overflow-hidden">
+          <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
             {todos.map((todo, index) => (
               <View key={todo.id}>
                 <Pressable
@@ -185,7 +185,7 @@ export function TowerdayTodos({
         </>
       ) : (
         <>
-          <View className="rounded-2xl bg-surface-container p-4">
+          <View className="rounded-2xl border border-outline-variant bg-surface p-4">
             <Typography
               variant="body-large"
               className="text-on-surface-variant"
@@ -197,7 +197,7 @@ export function TowerdayTodos({
         </>
       )}
 
-      <Button variant="light" fullWidth onPress={openAddTodos}>
+      <Button variant="secondary" fullWidth onPress={openAddTodos}>
         <View className="flex-row items-center gap-2">
           <IconPlus size={18} color="#008CCD" />
           <Typography variant="body-large" bold className="text-primary">
@@ -220,7 +220,7 @@ export function TowerdayTodos({
               Aufgaben hinzufügen
             </Typography>
             <Pressable
-              className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-surface active:opacity-70"
               onPress={() => TrueSheet.dismiss("towerday-add-todo")}
             >
               <IconX size={16} color="#41484F" />
@@ -260,7 +260,7 @@ export function TowerdayTodos({
           ))}
           <Spacer size="inline" />
           <Button
-            variant="subtle"
+            variant="secondary"
             fullWidth
             onPress={() => append({ title: "" })}
           >
@@ -293,7 +293,7 @@ export function TowerdayTodos({
               Aufgabe bearbeiten
             </Typography>
             <Pressable
-              className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-surface active:opacity-70"
               onPress={() => TrueSheet.dismiss("towerday-edit-todo")}
             >
               <IconX size={16} color="#41484F" />

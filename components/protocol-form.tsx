@@ -94,7 +94,7 @@ export function ProtocolForm({
           {isEditing ? "Protokoll bearbeiten" : "Protokoll erstellen"}
         </Typography>
         <Pressable
-          className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+          className="h-8 w-8 items-center justify-center rounded-full bg-badge active:opacity-70"
           onPress={onDismiss}
         >
           <IconX size={16} color="#41484F" />

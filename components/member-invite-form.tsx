@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useDb } from "jazz-tools/react-native";
 import { Typography } from "@/components/typography";
+import { NumericText } from "@/components/numeric-text";
 import { TextInput } from "@/components/text-input";
 import { Button } from "@/components/button";
 import { Spacer } from "@/components/spacer";
@@ -73,9 +74,12 @@ export function MemberInviteForm({
       </Typography>
 
       <Spacer size="item" />
-      <Typography variant="body-small" className="text-on-surface-variant">
-        User ID: {userId}
-      </Typography>
+      <View className="flex-row flex-wrap items-baseline gap-1">
+        <Typography variant="body-small" className="text-on-surface-variant">
+          User ID:
+        </Typography>
+        <NumericText className="text-sm text-on-surface-variant">{userId}</NumericText>
+      </View>
 
       <Spacer size="group" />
 

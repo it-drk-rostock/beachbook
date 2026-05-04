@@ -241,15 +241,19 @@ export function TowerdayDienstplan({
           </Typography>
           <Pressable
             onPress={() => openAddSheet("duty")}
-            className="rounded-full bg-duty-container/30 px-3 py-1.5 active:opacity-80"
+            className="rounded-lg border border-duty bg-transparent px-3 py-1.5 active:opacity-80"
           >
-            <Typography variant="label-small" bold className="text-duty">
+            <Typography
+              variant="label-small"
+              bold
+              className="text-on-duty-container"
+            >
               + Hinzufügen
             </Typography>
           </Pressable>
         </View>
         <View
-          className="overflow-hidden rounded-2xl bg-surface-container"
+          className="overflow-hidden rounded-2xl border border-outline-variant bg-surface"
           style={{ height: TIMELINE_HEIGHT }}
         >
           <Timeline
@@ -284,15 +288,19 @@ export function TowerdayDienstplan({
           </Typography>
           <Pressable
             onPress={() => openAddSheet("prepared")}
-            className="rounded-full bg-prepared-container/30 px-3 py-1.5 active:opacity-80"
+            className="rounded-lg border border-prepared bg-transparent px-3 py-1.5 active:opacity-80"
           >
-            <Typography variant="label-small" bold className="text-prepared">
+            <Typography
+              variant="label-small"
+              bold
+              className="text-on-prepared-container"
+            >
               + Hinzufügen
             </Typography>
           </Pressable>
         </View>
         <View
-          className="overflow-hidden rounded-2xl bg-surface-container"
+          className="overflow-hidden rounded-2xl border border-outline-variant bg-surface"
           style={{ height: TIMELINE_HEIGHT }}
         >
           <Timeline
@@ -329,7 +337,7 @@ export function TowerdayDienstplan({
               {addDraft.type === "duty" ? "Dienst" : "Bereitschaft"} eintragen
             </Typography>
             <Pressable
-              className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-surface active:opacity-70"
               onPress={() => TrueSheet.dismiss("duty-plan-add-shift")}
             >
               <IconX size={16} color="#41484F" />
@@ -452,7 +460,7 @@ export function TowerdayDienstplan({
                 bearbeiten
               </Typography>
               <Pressable
-                className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+                className="h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-surface active:opacity-70"
                 onPress={() => TrueSheet.dismiss("duty-plan-edit-shift")}
               >
                 <IconX size={16} color="#41484F" />
@@ -586,7 +594,7 @@ export function TowerdayDienstplan({
           </Typography>
           <Spacer size="group" />
           {guards.length === 0 ? (
-            <View className="rounded-2xl bg-surface-container p-4">
+            <View className="rounded-2xl border border-outline-variant bg-surface p-4">
               <Typography
                 variant="body-large"
                 className="text-on-surface-variant"
@@ -595,7 +603,7 @@ export function TowerdayDienstplan({
               </Typography>
             </View>
           ) : (
-            <View className="rounded-2xl bg-surface-container overflow-hidden">
+            <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
               {guards.map((guard, index) => (
                 <View key={guard.id}>
                   <Pressable
@@ -649,7 +657,7 @@ export function TowerdayDienstplan({
             Person wählen
           </Typography>
           <Spacer size="group" />
-          <View className="rounded-2xl bg-surface-container overflow-hidden">
+          <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
             {guards.map((guard, index) => (
               <View key={guard.id}>
                 <Pressable

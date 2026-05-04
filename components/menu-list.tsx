@@ -30,7 +30,7 @@ export function MenuItem({
       onPress={onPress}
       disabled={disabled}
     >
-      <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+      <View className="h-10 w-10 items-center justify-center rounded-md bg-badge">
         {icon}
       </View>
       <View className="flex-1">
@@ -58,7 +58,7 @@ export function MenuList({ children }: MenuListProps) {
   const items = React.Children.toArray(children);
 
   return (
-    <View className="rounded-2xl bg-surface-container overflow-hidden">
+    <View className="overflow-hidden rounded-2xl border border-outline-variant bg-surface">
       {items.map((child, index) => (
         <View key={index}>
           {child}

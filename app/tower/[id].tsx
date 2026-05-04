@@ -4,8 +4,8 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useAll, useDb } from "jazz-tools/react-native";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
+  IconAdjustmentsHorizontal,
   IconDiamond,
-  IconFileExport,
   IconFilePlus,
   IconFileCheck,
   IconShieldCheck,
@@ -27,6 +27,7 @@ import { TowerdayTodos } from "@/components/towerday-todos";
 import { TowerdayIncidents } from "@/components/towerday-incidents";
 import { TowerdayWeather } from "@/components/towerday-weather";
 import { useUser } from "@/hooks/use-user";
+import { useCSSVariable } from "uniwind";
 
 type TowerStatus =
   | "lifeguard_on_duty"
@@ -45,6 +46,7 @@ export default function TowerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const db = useDb();
   const { isAdmin } = useUser();
+  const primaryColor = useCSSVariable("--color-primary") as string;
 
   const { todayStart, tomorrowStart } = useMemo(() => {
     const start = new Date();
@@ -198,20 +200,20 @@ export default function TowerDetailScreen() {
           </View>
         )}
         {isAdmin && (
-          <View className="flex-row items-center gap-1 rounded-full border border-outline-variant px-2.5 py-1">
-            <IconDiamond size={12} color="#008CCD" />
+          <View className="flex-row items-center gap-1 rounded-full bg-badge px-2.5 py-1">
+            <IconDiamond size={12} color="var(--color-on-badge)" />
             <Typography
               variant="label-small"
               bold
-              className="text-primary uppercase"
+              className="text-on-badge uppercase"
             >
               Angemeldet als Admin
             </Typography>
           </View>
         )}
         {towerday ? (
-          <View className="rounded-full bg-primary/10 px-2.5 py-1">
-            <Typography variant="label-small" bold className="text-primary">
+          <View className="rounded-full bg-badge px-2.5 py-1">
+            <Typography variant="label-small" bold className="text-on-badge">
               {new Date(towerday.date).toLocaleDateString("de-DE", {
                 day: "2-digit",
                 month: "2-digit",
@@ -234,7 +236,7 @@ export default function TowerDetailScreen() {
 
       <Spacer size="group" />
 
-      <View className="rounded-2xl bg-surface-container p-4">
+      <View className="rounded-2xl border border-outline-variant bg-surface p-4">
         <TowerStatusIcon status={tower.status} size={28} />
         <Spacer size="inline" />
         <Typography
@@ -254,7 +256,7 @@ export default function TowerDetailScreen() {
       <Spacer size="item" />
 
       <View className="flex-row gap-3">
-        <View className="flex-1 rounded-2xl bg-surface-container p-4">
+        <View className="flex-1 rounded-2xl border border-outline-variant bg-surface p-4">
           <IconRun size={28} color="#2e7d32" />
           <Spacer size="inline" />
           <Typography
@@ -281,7 +283,7 @@ export default function TowerDetailScreen() {
             </Typography>
           )}
         </View>
-        <View className="flex-1 rounded-2xl bg-surface-container p-4">
+        <View className="flex-1 rounded-2xl border border-outline-variant bg-surface p-4">
           <IconWalk size={28} color="#f57f17" />
           <Spacer size="inline" />
           <Typography
@@ -317,32 +319,32 @@ export default function TowerDetailScreen() {
       <Spacer size="item" />
 
       <View className="flex-row gap-3">
-        <Button
-          variant="filled"
-          size="md"
-          className="flex-1"
+        <Pressable
+          className="flex-1 flex-col items-center gap-3 rounded-xl border border-outline-variant bg-surface px-3 py-7 active:opacity-80"
           onPress={() => TrueSheet.present("tower-select-protocol")}
         >
-          <IconFileExport size={18} color="#FFFFFF" />
+          <IconFilePlus size={28} color={primaryColor} />
           <Typography
             variant="label-large"
             bold
-            className="text-on-primary ml-2"
+            className="text-primary text-center"
           >
-            Protokoll
+            Protokoll erstellen
           </Typography>
-        </Button>
-        <Button
-          variant="light"
-          size="md"
-          className="flex-1"
+        </Pressable>
+        <Pressable
+          className="flex-1 flex-col items-center gap-3 rounded-xl border border-outline-variant bg-surface px-3 py-7 active:opacity-80"
           onPress={() => TrueSheet.present("tower-change-status")}
         >
-          <TowerStatusIcon status={tower.status} size={18} />
-          <Typography variant="label-large" bold className="text-primary ml-2">
-            Status
+          <IconAdjustmentsHorizontal size={28} color={primaryColor} />
+          <Typography
+            variant="label-large"
+            bold
+            className="text-primary text-center"
+          >
+            Status ändern
           </Typography>
-        </Button>
+        </Pressable>
       </View>
 
       <Spacer size="section" />
@@ -361,7 +363,7 @@ export default function TowerDetailScreen() {
         />
       ) : towerday.isCompleted ? (
         <>
-          <View className="rounded-2xl bg-surface-container py-12 px-8 items-center">
+          <View className="rounded-2xl border border-outline-variant bg-surface py-12 px-8 items-center">
             <View className="h-16 w-16 items-center justify-center rounded-2xl bg-success/15 mb-4">
               <IconShieldCheck size={32} color="#006D3B" />
             </View>
@@ -498,7 +500,7 @@ export default function TowerDetailScreen() {
 
       {!submissions || submissions.length === 0 ? (
         <EmptyState
-          icon={<IconFileCheck size={28} color="#008CCD" />}
+          icon={<IconFileCheck size={28} color={primaryColor} />}
           title="Keine Protokolle"
           description="Für den heutigen Turmtag wurden noch keine Protokolle erstellt."
           actionLabel="Protokoll erstellen"
@@ -532,7 +534,7 @@ export default function TowerDetailScreen() {
             return (
               <Pressable
                 key={sub.id}
-                className="rounded-2xl bg-surface-container p-4 active:opacity-80"
+                className="rounded-2xl border border-outline-variant bg-surface p-4 active:opacity-80"
                 onPress={() => router.push(`/submission/${sub.id}` as any)}
               >
                 <View className="flex-row items-center justify-between">
@@ -555,18 +557,15 @@ export default function TowerDetailScreen() {
             );
           })}
           <Spacer size="compact" />
-          <Button
-            variant="light"
-            fullWidth
+          <Pressable
+            className="w-full flex-row items-center justify-center gap-2 rounded-xl border border-primary bg-surface px-4 py-4 active:opacity-80"
             onPress={() => TrueSheet.present("tower-select-protocol")}
           >
-            <View className="flex-row items-center gap-2">
-              <IconFilePlus size={18} color="#008CCD" />
-              <Typography variant="label-large" bold className="text-primary">
-                Weiteres Protokoll
-              </Typography>
-            </View>
-          </Button>
+            <IconFilePlus size={22} color={primaryColor} />
+            <Typography variant="label-large" bold className="text-primary">
+              Weiteres Protokoll
+            </Typography>
+          </Pressable>
         </View>
       )}
 
@@ -583,11 +582,11 @@ export default function TowerDetailScreen() {
             Status ändern
           </Typography>
           <Spacer size="group" />
-          <View className="rounded-2xl bg-surface-container overflow-hidden">
+          <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
             {statusOptions.map((option, index) => (
               <View key={option.value}>
                 <Pressable
-                  className={`p-4 flex-row items-center gap-3 active:opacity-70 ${option.value === tower.status ? "bg-primary/10" : ""}`}
+                  className={`p-4 flex-row items-center gap-3 active:opacity-70 ${option.value === tower.status ? "bg-badge" : ""}`}
                   onPress={() => {
                     db.update(app.towers, tower.id, {
                       status: option.value,
@@ -635,7 +634,7 @@ export default function TowerDetailScreen() {
           </Typography>
           <Spacer size="group" />
           {!protocols || protocols.length === 0 ? (
-            <View className="rounded-2xl bg-surface-container p-4">
+            <View className="rounded-2xl border border-outline-variant bg-surface p-4">
               <Typography
                 variant="body-large"
                 className="text-on-surface-variant"
@@ -644,7 +643,7 @@ export default function TowerDetailScreen() {
               </Typography>
             </View>
           ) : (
-            <View className="rounded-2xl bg-surface-container overflow-hidden">
+            <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
               {protocols.map((protocol, index) => (
                 <View key={protocol.id}>
                   <Pressable

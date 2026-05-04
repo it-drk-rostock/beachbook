@@ -377,7 +377,7 @@ export function TowerForm({
                 >
                   Mitglieder verwalten
                 </Typography>
-                <View className="rounded-full bg-surface-container-high px-2.5 py-0.5">
+                <View className="rounded-full bg-badge px-2.5 py-0.5">
                   <Typography
                     variant="label-medium"
                     className="text-on-surface-variant"
@@ -432,11 +432,11 @@ export function TowerForm({
           </Typography>
           <Spacer size="group" />
           {locations && locations.length > 0 ? (
-            <View className="rounded-2xl bg-surface-container overflow-hidden">
+            <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
               {locations.map((loc, index) => (
                 <View key={loc.id}>
                   <Pressable
-                    className={`p-4 flex-row items-center gap-3 active:opacity-70 ${loc.id === selectedLocationId ? "bg-primary/10" : ""}`}
+                    className={`p-4 flex-row items-center gap-3 active:opacity-70 ${loc.id === selectedLocationId ? "bg-badge" : ""}`}
                     onPress={() => {
                       setValue("locationId", loc.id);
                       TrueSheet.dismiss("tower-pick-location");
@@ -492,11 +492,11 @@ export function TowerForm({
             Status wählen
           </Typography>
           <Spacer size="group" />
-          <View className="rounded-2xl bg-surface-container overflow-hidden">
+          <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
             {statusOptions.map((option, index) => (
               <View key={option.value}>
                 <Pressable
-                  className={`p-4 flex-row items-center gap-3 active:opacity-70 ${option.value === selectedStatus ? "bg-primary/10" : ""}`}
+                  className={`p-4 flex-row items-center gap-3 active:opacity-70 ${option.value === selectedStatus ? "bg-badge" : ""}`}
                   onPress={() => {
                     setValue("status", option.value);
                     TrueSheet.dismiss("tower-pick-status");
@@ -543,11 +543,11 @@ export function TowerForm({
           <Spacer size="group" />
 
           {towerMembers.length > 0 ? (
-            <View className="rounded-2xl bg-surface-container overflow-hidden">
+            <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
               {towerMembers.map((m, index) => (
                 <View key={m.id}>
                   <View className="p-4 flex-row items-center gap-3">
-                    <View className="h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+                    <View className="h-9 w-9 items-center justify-center rounded-full bg-badge">
                       <IconUser size={18} color={primaryColor} />
                     </View>
                     <Typography variant="body-large" className="flex-1">
@@ -565,7 +565,7 @@ export function TowerForm({
               ))}
             </View>
           ) : (
-            <View className="rounded-2xl bg-surface-container p-4 items-center">
+            <View className="rounded-2xl border border-outline-variant bg-surface p-4 items-center">
               <Typography
                 variant="body-medium"
                 className="text-on-surface-variant"
@@ -586,14 +586,14 @@ export function TowerForm({
               >
                 Mitglied hinzufügen
               </Typography>
-              <View className="rounded-2xl bg-surface-container overflow-hidden">
+              <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
                 {availableMembers.map((m, index) => (
                   <View key={m.id}>
                     <Pressable
                       className="p-4 flex-row items-center gap-3 active:opacity-70"
                       onPress={() => addMemberToTower(m.id)}
                     >
-                      <View className="h-9 w-9 items-center justify-center rounded-full bg-surface-container-high">
+                      <View className="h-9 w-9 items-center justify-center rounded-full bg-badge">
                         <IconUser size={18} color="#41484F" />
                       </View>
                       <Typography variant="body-large" className="flex-1">
@@ -610,7 +610,7 @@ export function TowerForm({
           )}
 
           {/* Scan QR to add new member */}
-          <Button variant="light" fullWidth onPress={openMemberScanner}>
+          <Button variant="secondary" fullWidth onPress={openMemberScanner}>
             <View className="flex-row items-center gap-2">
               <IconUserPlus size={20} color={primaryColor} />
               <Typography variant="body-large" bold className="text-primary">
@@ -649,7 +649,7 @@ export function TowerForm({
             Scanne den QR-Code eines Mitglieds, um es dem Turm hinzuzufügen.
           </Typography>
           <Spacer size="group" />
-          <View className="overflow-hidden rounded-xl bg-surface-container-high">
+          <View className="overflow-hidden rounded-xl bg-badge">
             <CameraView
               style={{ width: "100%", height: 280 }}
               barcodeScannerSettings={{ barcodeTypes: ["qr"] }}

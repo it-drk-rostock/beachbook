@@ -157,10 +157,10 @@ export default function OrganizationScreen() {
       {/* Org Name Card */}
       {isAdmin ? (
         <Pressable
-          className="rounded-2xl bg-primary/10 p-4 flex-row items-center gap-3 active:opacity-80"
+          className="rounded-2xl border border-outline-variant border-l-4 border-l-primary bg-surface p-4 flex-row items-center gap-3 active:opacity-80"
           onPress={() => TrueSheet.present("org-edit")}
         >
-          <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+          <View className="h-10 w-10 items-center justify-center rounded-md bg-badge">
             <IconBuildingCommunity size={20} color={primaryColor} />
           </View>
           <Typography variant="body-large" bold className="flex-1">
@@ -168,8 +168,8 @@ export default function OrganizationScreen() {
           </Typography>
         </Pressable>
       ) : (
-        <View className="rounded-2xl bg-primary/10 p-4 flex-row items-center gap-3">
-          <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+        <View className="rounded-2xl border border-outline-variant border-l-4 border-l-primary bg-surface p-4 flex-row items-center gap-3">
+          <View className="h-10 w-10 items-center justify-center rounded-md bg-badge">
             <IconBuildingCommunity size={20} color={primaryColor} />
           </View>
           <Typography variant="body-large" bold className="flex-1">
@@ -217,7 +217,7 @@ export default function OrganizationScreen() {
         locations.map((location) => (
           <Pressable
             key={location.id}
-            className="rounded-2xl bg-surface-container p-4 flex-row items-center gap-3 mb-3 active:opacity-80"
+            className="rounded-2xl border border-outline-variant bg-surface p-4 flex-row items-center gap-3 mb-3 active:opacity-80"
             onPress={() => {
               if (!isAdmin) return;
               setActiveLocation({
@@ -228,7 +228,7 @@ export default function OrganizationScreen() {
             }}
             disabled={!isAdmin}
           >
-            <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <View className="h-10 w-10 items-center justify-center rounded-md bg-badge">
               <IconMapPin size={20} color={primaryColor} />
             </View>
             <Typography variant="body-large" className="flex-1">
@@ -237,7 +237,7 @@ export default function OrganizationScreen() {
           </Pressable>
         ))
       ) : (
-        <View className="rounded-2xl bg-surface-container p-4 items-center">
+        <View className="rounded-2xl border border-outline-variant bg-surface p-4 items-center">
           <Typography
             variant="body-medium"
             className="text-on-surface-variant"
@@ -252,7 +252,7 @@ export default function OrganizationScreen() {
       {/* Mitglieder Section */}
       <View className="flex-row items-center justify-between">
         <SectionHeader>Mitglieder</SectionHeader>
-        <View className="h-7 min-w-7 items-center justify-center rounded-full bg-surface-container-high px-2">
+        <View className="h-7 min-w-7 items-center justify-center rounded-full bg-badge px-2">
           <Typography
             variant="label-medium"
             className="text-on-surface-variant"
@@ -266,11 +266,11 @@ export default function OrganizationScreen() {
 
       {/* Members Container */}
       {orgMembers.length > 0 ? (
-        <View className="rounded-2xl bg-surface-container overflow-hidden">
+        <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
           {orgMembers.map((m, index) => (
             <View key={m.id}>
               <View className="p-4 flex-row items-center gap-3">
-                <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <View className="h-10 w-10 items-center justify-center rounded-full bg-badge">
                   <IconUser size={20} color={primaryColor} />
                 </View>
                 <Typography variant="body-large" className="flex-1">
@@ -308,7 +308,7 @@ export default function OrganizationScreen() {
           ))}
         </View>
       ) : (
-        <View className="rounded-2xl bg-surface-container p-4 items-center">
+        <View className="rounded-2xl border border-outline-variant bg-surface p-4 items-center">
           <Typography
             variant="body-medium"
             className="text-on-surface-variant"
@@ -400,7 +400,7 @@ export default function OrganizationScreen() {
                 Scanne den QR-Code des Nutzers, um die User-ID zu übernehmen.
               </Typography>
               <Spacer size="group" />
-              <View className="overflow-hidden rounded-xl bg-surface-container-high">
+              <View className="overflow-hidden rounded-xl bg-badge">
                 <CameraView
                   style={{ width: "100%", height: 280 }}
                   barcodeScannerSettings={{ barcodeTypes: ["qr"] }}

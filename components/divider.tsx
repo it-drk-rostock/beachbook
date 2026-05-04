@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { tv, type VariantProps } from "tailwind-variants";
 
 const dividerVariants = tv({
-  base: "bg-outline-variant/40",
+  base: "bg-outline-variant",
   variants: {
     inset: {
       true: "mx-4",

@@ -2,6 +2,7 @@
 @import "uniwind";
 
 @theme {
+  /* Clean-Core: Wasserwacht — premium white canvas, neutral strokes, #008ccd accents */
   --color-primary: #008ccd;
   --color-on-primary: #ffffff;
   --color-primary-container: #c8e6ff;
@@ -16,17 +17,22 @@
   --color-on-tertiary: #ffffff;
 
   --color-background: #ffffff;
-  --color-on-background: #191c20;
+  --color-on-background: #111827;
 
   --color-surface: #ffffff;
-  --color-on-surface: #191c20;
-  --color-surface-container: #f2f7fb;
-  --color-surface-container-high: #e7f0f8;
-  --color-surface-variant: #dde3ea;
-  --color-on-surface-variant: #41484f;
+  --color-on-surface: #111827;
+  /* Cards share canvas white; depth = 1px border (outline-variant), not tint */
+  --color-surface-container: #ffffff;
+  --color-surface-container-high: #f3f4f6;
+  --color-surface-variant: #e5e7eb;
+  --color-on-surface-variant: #6b7280;
 
-  --color-outline: #727980;
-  --color-outline-variant: #c1c7ce;
+  --color-outline: #9ca3af;
+  --color-outline-variant: #e5e7eb;
+
+  /* Info pills / low-emphasis tags */
+  --color-badge: #f3f4f6;
+  --color-on-badge: #374151;
 
   --color-error: #ba1a1a;
   --color-on-error: #ffffff;
@@ -43,11 +49,16 @@
   --color-on-prepared-container: #3e2723;
 
   --color-card: #ffffff;
-  --color-card-foreground: #191c20;
+  --color-card-foreground: #111827;
 
-  --color-muted: #f1f3f6;
-  --color-muted-foreground: #727980;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #374151;
 
-  --color-input: #dde3ea;
+  --color-input: #e5e7eb;
   --color-ring: #008ccd;
+
+  /* Cards / large surfaces: 12px; inputs / small blocks: 8px */
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
 }

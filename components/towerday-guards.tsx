@@ -206,7 +206,7 @@ export function TowerdayGuards({
 
       {regularGuards.length > 0 ? (
         <>
-          <View className="rounded-2xl bg-surface-container overflow-hidden">
+          <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
             {regularGuards.map((guard, index) => (
               <View key={guard.id}>
                 <Pressable
@@ -225,7 +225,7 @@ export function TowerdayGuards({
         </>
       ) : (
         <>
-          <View className="rounded-2xl bg-surface-container p-4">
+          <View className="rounded-2xl border border-outline-variant bg-surface p-4">
             <Typography
               variant="body-large"
               className="text-on-surface-variant"
@@ -237,7 +237,7 @@ export function TowerdayGuards({
         </>
       )}
 
-      <Button variant="light" fullWidth onPress={openAddGuards}>
+      <Button variant="secondary" fullWidth onPress={openAddGuards}>
         <View className="flex-row items-center gap-2">
           <IconPlus size={18} color="#008CCD" />
           <Typography variant="body-large" bold className="text-primary">
@@ -263,7 +263,7 @@ export function TowerdayGuards({
                 : "Turmleiter bearbeiten"}
             </Typography>
             <Pressable
-              className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-surface active:opacity-70"
               onPress={() => TrueSheet.dismiss("tower-edit-leader")}
             >
               <IconX size={16} color="#41484F" />
@@ -317,7 +317,7 @@ export function TowerdayGuards({
               Wachgänger hinzufügen
             </Typography>
             <Pressable
-              className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-surface active:opacity-70"
               onPress={() => TrueSheet.dismiss("tower-add-guard")}
             >
               <IconX size={16} color="#41484F" />
@@ -357,7 +357,7 @@ export function TowerdayGuards({
           ))}
           <Spacer size="inline" />
           <Button
-            variant="subtle"
+            variant="secondary"
             fullWidth
             onPress={() => append({ name: "" })}
           >
@@ -395,7 +395,7 @@ export function TowerdayGuards({
               Wachgänger bearbeiten
             </Typography>
             <Pressable
-              className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-surface active:opacity-70"
               onPress={() => TrueSheet.dismiss("tower-edit-guard")}
             >
               <IconX size={16} color="#41484F" />

@@ -3,12 +3,15 @@ import { Pressable, PressableProps, Text } from "react-native";
 import { tv, type VariantProps } from "tailwind-variants";
 
 const buttonVariants = tv({
-  base: "rounded-full items-center justify-center flex-row",
+  /** `rounded-lg` = 8px in `@theme` — aligns with Clean-Core controls */
+  base: "rounded-lg items-center justify-center flex-row",
   variants: {
     variant: {
       filled: "bg-primary active:opacity-90",
-      light: "bg-primary/10 active:opacity-90",
-      outline: "border border-primary active:opacity-50",
+      light: "bg-badge active:opacity-90",
+      /** Transparent + primary border (secondary CTAs, towerday “hinzufügen”, Status). */
+      secondary: "border border-primary bg-transparent active:opacity-80",
+      outline: "border border-outline-variant active:opacity-50",
       subtle: "bg-transparent active:opacity-50",
       danger: "bg-error active:opacity-90",
       "danger-light": "bg-error/10 active:opacity-90",
@@ -35,6 +38,7 @@ const textVariants = tv({
     variant: {
       filled: "text-on-primary",
       light: "text-primary",
+      secondary: "text-primary",
       outline: "text-primary",
       subtle: "text-primary",
       danger: "text-on-error",

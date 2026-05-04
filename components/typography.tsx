@@ -4,6 +4,10 @@ import { tv, type VariantProps } from "tailwind-variants";
 const typographyVariants = tv({
   base: "text-on-background",
   variants: {
+    tabular: {
+      true: "tabular-nums",
+      false: "",
+    },
     variant: {
       "display-large": "text-[57px] font-normal tracking-tight",
       "headline-large": "text-[32px] font-normal",
@@ -25,6 +29,7 @@ const typographyVariants = tv({
   },
   defaultVariants: {
     variant: "body-large",
+    tabular: false,
   },
 });
 
@@ -33,6 +38,8 @@ type TypographyVariant = VariantProps<typeof typographyVariants>["variant"];
 interface TypographyProps extends TextProps {
   variant?: TypographyVariant;
   bold?: boolean;
+  /** Tabular figures where supported (timestamps, inline counts). */
+  tabular?: boolean;
   className?: string;
   children: React.ReactNode;
 }
@@ -40,13 +47,14 @@ interface TypographyProps extends TextProps {
 export function Typography({
   variant,
   bold,
+  tabular,
   className,
   children,
   ...props
 }: TypographyProps) {
   return (
     <Text
-      className={typographyVariants({ variant, bold, className })}
+      className={typographyVariants({ variant, bold, tabular, className })}
       {...props}
     >
       {children}

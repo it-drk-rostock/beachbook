@@ -159,7 +159,7 @@ export function TowerdayWeather({
 
       {sorted.length > 0 ? (
         <>
-          <View className="rounded-2xl bg-surface-container overflow-hidden">
+          <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
             {sorted.map((entry, index) => (
               <View key={entry.id}>
                 <Pressable
@@ -236,7 +236,7 @@ export function TowerdayWeather({
         </>
       ) : (
         <>
-          <View className="rounded-2xl bg-surface-container p-4">
+          <View className="rounded-2xl border border-outline-variant bg-surface p-4">
             <Typography
               variant="body-large"
               className="text-on-surface-variant"
@@ -248,7 +248,7 @@ export function TowerdayWeather({
         </>
       )}
 
-      <Button variant="light" fullWidth onPress={openAdd}>
+      <Button variant="secondary" fullWidth onPress={openAdd}>
         <View className="flex-row items-center gap-2">
           <IconPlus size={18} color="#008CCD" />
           <Typography variant="body-large" bold className="text-primary">
@@ -271,7 +271,7 @@ export function TowerdayWeather({
               {editingId ? "Wetterdaten bearbeiten" : "Wetterdaten erfassen"}
             </Typography>
             <Pressable
-              className="h-8 w-8 items-center justify-center rounded-full bg-surface-container active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-surface active:opacity-70"
               onPress={() => TrueSheet.dismiss("towerday-weather-form")}
             >
               <IconX size={16} color="#41484F" />
@@ -443,12 +443,12 @@ export function TowerdayWeather({
             Windrichtung
           </Typography>
           <Spacer size="group" />
-          <View className="rounded-2xl bg-surface-container overflow-hidden">
+          <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
             {windDirectionOptions.map((option, index) => (
               <View key={option.value}>
                 <Pressable
                   className={`p-4 flex-row items-center gap-3 active:opacity-70 ${
-                    option.value === selectedDirection ? "bg-primary/10" : ""
+                    option.value === selectedDirection ? "bg-badge" : ""
                   }`}
                   onPress={() => {
                     setSelectedDirection(option.value);

@@ -93,7 +93,7 @@ function ProtocolsTab({
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
         renderItem={({ item }) => (
           <Pressable
-            className="rounded-2xl bg-surface-container p-4 active:opacity-80"
+            className="rounded-2xl border border-outline-variant bg-surface p-4 active:opacity-80"
             onPress={() =>
               onSelectProtocol({
                 id: item.id,
@@ -184,7 +184,7 @@ function SubmissionsTab() {
 
           return (
             <Pressable
-              className="rounded-2xl bg-surface-container p-4 active:opacity-80"
+              className="rounded-2xl border border-outline-variant bg-surface p-4 active:opacity-80"
               onPress={() => router.push(`/submission/${item.id}` as any)}
             >
               <View className="flex-row items-start justify-between">
