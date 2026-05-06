@@ -61,4 +61,9 @@ export default s.definePermissions(app, ({ policy }) => {
   policy.weather.allowInsert.always();
   policy.weather.allowUpdate.always();
   policy.weather.allowDelete.always();
+
+  policy.towerstatuses.allowRead.always();
+  policy.towerstatuses.allowInsert.always();
+  policy.towerstatuses.allowUpdate.always();
+  policy.towerstatuses.allowDelete.always();
 });

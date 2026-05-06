@@ -93,6 +93,18 @@ const schema = {
       "south-west",
     ),
   }),
+  towerstatuses: s.table({
+    towerdayId: s.ref("towerdays"),
+    towerId: s.ref("towers"),
+    organizationId: s.ref("organizations"),
+    status: s.enum(
+      "lifeguard_on_duty",
+      "use_caution_when_swimming",
+      "beach_closed",
+      "closed",
+    ),
+    dateTime: s.timestamp(),
+  }),
 };
 
 type AppSchema = s.Schema<typeof schema>;

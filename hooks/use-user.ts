@@ -16,7 +16,7 @@ export function useUser() {
   const organization = member?.organization;
 
   return {
-    isLoading: membership === undefined,
+    isMember: !!member,
     session,
     member,
     organization,

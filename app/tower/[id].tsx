@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, ScrollView, View } from "react-native";
+import { Platform, Pressable, ScrollView, View } from "react-native";
 import { useAll, useDb } from "jazz-tools/react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   IconAdjustmentsHorizontal,
+  IconClock,
   IconDiamond,
   IconFilePlus,
   IconFileCheck,
@@ -26,6 +28,7 @@ import { TowerdayGuards } from "@/components/towerday-guards";
 import { TowerdayDienstplan } from "@/components/towerday-dienstplan";
 import { TowerdayTodos } from "@/components/towerday-todos";
 import { TowerdayIncidents } from "@/components/towerday-incidents";
+import { TowerdayStatusHistory } from "@/components/towerday-status-history";
 import { TowerdayWeather } from "@/components/towerday-weather";
 import { useUser } from "@/hooks/use-user";
 import { useCSSVariable } from "uniwind";
@@ -86,6 +89,7 @@ export default function TowerDetailScreen() {
             todosViaTowerday: true,
             incidentsViaTowerday: true,
             weatherViaTowerday: true,
+            towerstatusesViaTowerday: true,
           })
       : undefined,
   );
@@ -122,6 +126,31 @@ export default function TowerDetailScreen() {
   );
 
   const now = useMemo(() => Date.now(), []);
+
+  const latestStatusTime = useMemo(() => {
+    const entries = towerday?.towerstatusesViaTowerday;
+    if (!entries || entries.length === 0) return null;
+    const sorted = [...entries].sort((a, b) => {
+      const ta = typeof a.dateTime === "number" ? a.dateTime : new Date(a.dateTime).getTime();
+      const tb = typeof b.dateTime === "number" ? b.dateTime : new Date(b.dateTime).getTime();
+      return tb - ta;
+    });
+    return new Date(sorted[0].dateTime).toLocaleTimeString("de-DE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }, [towerday?.towerstatusesViaTowerday]);
+
+  const [statusTime, setStatusTime] = useState(new Date());
+  const [showStatusTimePicker, setShowStatusTimePicker] = useState(
+    Platform.OS === "ios",
+  );
+
+  const formatTime = (date: Date) => {
+    const h = date.getHours().toString().padStart(2, "0");
+    const m = date.getMinutes().toString().padStart(2, "0");
+    return `${h}:${m}`;
+  };
 
   const { currentDutyNames, currentPreparedNames } = useMemo(() => {
     if (!towerday)
@@ -182,6 +211,13 @@ export default function TowerDetailScreen() {
       date: todayStart,
       isCompleted: false,
     });
+    db.insert(app.towerstatuses, {
+      towerdayId: newTowerday.value.id,
+      towerId: tower.id,
+      organizationId: tower.organizationId,
+      status: tower.status,
+      dateTime: Date.now(),
+    });
 
     const incompleteTodos =
       latestPreviousTowerday?.todosViaTowerday?.filter(
@@ -197,6 +233,28 @@ export default function TowerDetailScreen() {
         isCompleted: false,
       });
     }
+  };
+
+  const handleTowerStatusChange = (nextStatus: TowerStatus) => {
+    if (!tower) return;
+    if (nextStatus === tower.status) {
+      TrueSheet.dismiss("tower-change-status");
+      return;
+    }
+
+    db.update(app.towers, tower.id, { status: nextStatus });
+
+    if (towerday) {
+      db.insert(app.towerstatuses, {
+        towerdayId: towerday.id,
+        towerId: tower.id,
+        organizationId: tower.organizationId,
+        status: nextStatus,
+        dateTime: statusTime.getTime(),
+      });
+    }
+
+    TrueSheet.dismiss("tower-change-status");
   };
 
   if (!tower) {
@@ -276,13 +334,23 @@ export default function TowerDetailScreen() {
       <View className="rounded-2xl border border-outline-variant bg-surface p-4">
         <TowerStatusIcon status={tower.status} size={28} />
         <Spacer size="inline" />
-        <Typography
-          variant="label-small"
-          bold
-          className="text-on-surface-variant uppercase"
-        >
-          Status
-        </Typography>
+        <View className="flex-row items-center justify-between">
+          <Typography
+            variant="label-small"
+            bold
+            className="text-on-surface-variant uppercase"
+          >
+            Status
+          </Typography>
+          {latestStatusTime && (
+            <Typography
+              variant="label-small"
+              className="text-on-surface-variant"
+            >
+              seit {latestStatusTime}
+            </Typography>
+          )}
+        </View>
         <Spacer size="inline" />
         <Typography variant="title-medium" bold className="text-primary">
           {statusOptions.find((o) => o.value === tower.status)?.label ??
@@ -371,7 +439,11 @@ export default function TowerDetailScreen() {
         </Pressable>
         <Pressable
           className="flex-1 flex-col items-center gap-3 rounded-xl border border-outline-variant bg-surface px-3 py-7 active:opacity-80"
-          onPress={() => TrueSheet.present("tower-change-status")}
+          onPress={() => {
+            setStatusTime(new Date());
+            setShowStatusTimePicker(Platform.OS === "ios");
+            TrueSheet.present("tower-change-status");
+          }}
         >
           <IconAdjustmentsHorizontal size={28} color={primaryColor} />
           <Typography
@@ -437,6 +509,14 @@ export default function TowerDetailScreen() {
               </Typography>
             </View>
           </Button>
+          <Spacer size="group" />
+          <TowerdayStatusHistory
+            entries={(towerday.towerstatusesViaTowerday ?? []).map((s) => ({
+              id: s.id,
+              status: s.status,
+              dateTime: s.dateTime,
+            }))}
+          />
         </>
       ) : (
         <>
@@ -495,6 +575,15 @@ export default function TowerDetailScreen() {
               id: i.id,
               description: i.description,
               dateTime: i.dateTime,
+            }))}
+          />
+
+          <Spacer size="group" />
+          <TowerdayStatusHistory
+            entries={(towerday.towerstatusesViaTowerday ?? []).map((s) => ({
+              id: s.id,
+              status: s.status,
+              dateTime: s.dateTime,
             }))}
           />
 
@@ -623,17 +712,46 @@ export default function TowerDetailScreen() {
             Status ändern
           </Typography>
           <Spacer size="group" />
+          <Typography
+            variant="label-small"
+            bold
+            className="text-on-surface-variant uppercase mb-1"
+          >
+            Uhrzeit
+          </Typography>
+          {Platform.OS === "android" && !showStatusTimePicker ? (
+            <Pressable
+              onPress={() => setShowStatusTimePicker(true)}
+              className="flex-row items-center gap-2 border border-outline-variant bg-surface rounded-md px-5 py-3.5 active:opacity-80"
+            >
+              <IconClock size={18} color="#41484F" />
+              <Typography variant="body-large" bold>
+                {formatTime(statusTime)}
+              </Typography>
+            </Pressable>
+          ) : null}
+          {showStatusTimePicker && (
+            <View className="items-center rounded-md border border-outline-variant bg-surface overflow-hidden">
+              <DateTimePicker
+                value={statusTime}
+                mode="time"
+                is24Hour
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={(_, date) => {
+                  if (Platform.OS === "android") setShowStatusTimePicker(false);
+                  if (date) setStatusTime(date);
+                }}
+                locale="de-DE"
+              />
+            </View>
+          )}
+          <Spacer size="group" />
           <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
             {statusOptions.map((option, index) => (
               <View key={option.value}>
                 <Pressable
                   className={`p-4 flex-row items-center gap-3 active:opacity-70 ${option.value === tower.status ? "bg-badge" : ""}`}
-                  onPress={() => {
-                    db.update(app.towers, tower.id, {
-                      status: option.value,
-                    });
-                    TrueSheet.dismiss("tower-change-status");
-                  }}
+                  onPress={() => handleTowerStatusChange(option.value)}
                 >
                   <TowerStatusIcon status={option.value} size={22} />
                   <Typography variant="body-large" className="flex-1">

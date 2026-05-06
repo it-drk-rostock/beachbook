@@ -24,9 +24,9 @@ const StyledSafeAreaView = withUniwind(SafeAreaView);
 export default function DashboardScreen() {
   const router = useRouter();
   const primaryColor = useCSSVariable("--color-primary") as string;
-  const { isLoading, member, organization, name } = useUser();
+  const { isMember, member, organization, name } = useUser();
 
-  const hasOrganization = !isLoading && !!member;
+  const hasOrganization = !!member;
   const towerIds = member?.towerIds ?? [];
   const hasTowers = towerIds.length > 0;
 
@@ -128,7 +128,7 @@ export default function DashboardScreen() {
           <PageHeader>Dashboard</PageHeader>
         </View>
 
-        {!isLoading && !hasOrganization && (
+        {!hasOrganization && (
           <View className="px-6">
             <Spacer size="group" />
             <EmptyStateCard
@@ -137,15 +137,6 @@ export default function DashboardScreen() {
               title="Keine Organisation"
               description="Frage deinen Wachleiter oder erstelle deine eigene Organisation."
               onPress={() => router.push("/organization")}
-            />
-
-            <Spacer size="compact" />
-            <EmptyStateCard
-              tone="surface"
-              icon={<IconBuildingLighthouse size={24} color={primaryColor} />}
-              title="Keine Türme"
-              description="Um Türme zu sehen, brauchst du eine Organisation."
-              onPress={() => router.push("/towers")}
             />
           </View>
         )}

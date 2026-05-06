@@ -18,7 +18,7 @@ import { StyledSafeAreaView } from "@/components/styled-safe-area-view";
 export default function TowersScreen() {
   const { q } = useLocalSearchParams<{ q?: string }>();
   const primaryColor = useCSSVariable("--color-primary") as string;
-  const { isLoading, organization } = useUser();
+  const { isMember, organization } = useUser();
   const [editingTower, setEditingTower] = useState<TowerData | undefined>();
 
   const towers = useAll(
@@ -65,7 +65,7 @@ export default function TowersScreen() {
     TrueSheet.present("edit-tower");
   };
 
-  if (isLoading) return null;
+  if (!isMember) return null;
 
   const isEmpty = towers && towers.length === 0;
   const noResults = filteredTowers.length === 0 && !!q;

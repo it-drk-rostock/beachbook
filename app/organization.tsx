@@ -26,7 +26,7 @@ import { app } from "@/schema";
 export default function OrganizationScreen() {
   const primaryColor = useCSSVariable("--color-primary") as string;
   const db = useDb();
-  const { isLoading, member, organization, isAdmin, session } = useUser();
+  const { isMember, member, organization, isAdmin, session } = useUser();
   const [activeLocation, setActiveLocation] = useState<{
     id: string;
     name: string;
@@ -118,10 +118,6 @@ export default function OrganizationScreen() {
         return role;
     }
   };
-
-  if (isLoading) {
-    return <View className="flex-1 bg-background" />;
-  }
 
   if (!member || !organization) {
     return (
