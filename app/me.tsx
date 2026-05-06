@@ -12,6 +12,7 @@ import { Typography } from "@/components/typography";
 import { MemberNameForm } from "@/components/member-name-form";
 import { useUser } from "@/hooks/use-user";
 import { useLocalFirstAuth } from "jazz-tools/expo";
+import { useAuth } from "@clerk/expo";
 
 const StyledSafeAreaView = withUniwind(SafeAreaView);
 
@@ -19,7 +20,9 @@ export default function MeScreen() {
   const router = useRouter();
   const primaryColor = useCSSVariable("--color-primary") as string;
   const { name, role, member, session } = useUser();
-  const {signOut} = useLocalFirstAuth();
+  const { signOut } = useAuth();
+
+  console.log(session);
 
   const handleSignOut = async () => {
     await signOut();
@@ -69,7 +72,7 @@ export default function MeScreen() {
 
         <View className="pb-4">
           <Button
-            variant="light"
+            variant="outline"
             fullWidth
             onPress={() => TrueSheet.present("user-qr")}
           >

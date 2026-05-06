@@ -76,10 +76,9 @@ export default function DashboardScreen() {
     if (!towerdays) return map;
 
     const current = new Date(now);
-    const mins = current.getMinutes();
-    current.setMinutes(mins < 30 ? 0 : 30, 0, 0);
+    current.setMinutes(0, 0, 0);
     const windowStart = current.getTime();
-    const windowEnd = windowStart + 30 * 60 * 1000;
+    const windowEnd = windowStart + 60 * 60 * 1000;
 
     for (const td of towerdays) {
       const guards = td.guardsViaTowerday ?? [];

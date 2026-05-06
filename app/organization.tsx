@@ -183,7 +183,7 @@ export default function OrganizationScreen() {
       {/* Invite Button - only for admins */}
       {isAdmin && (
         <Button
-          variant="light"
+          variant="secondary"
           fullWidth
           onPress={openInviteScanner}
         >

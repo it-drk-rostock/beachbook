@@ -1,16 +1,16 @@
-import "jazz-tools/expo/polyfills";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+
 import "react-native-reanimated";
 import "../global.css";
-import { useSession } from "jazz-tools/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { IconPlus } from "@tabler/icons-react-native";
 import { Providers } from "@/providers/providers";
+import { useAuth } from "@clerk/expo";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -56,10 +56,12 @@ const HEADER_BORDER = "#e5e7eb";
 const HEADER_ON_SURFACE = "#111827";
 
 function RootLayoutNav() {
-  const session = useSession();
   const router = useRouter();
+  const { isSignedIn, isLoaded } = useAuth({ treatPendingAsSignedOut: false });
 
-  /** RN supports full ViewStyle; Expo's stack types only list backgroundColor. */
+  if (!isLoaded) return null;
+  const signedIn = isSignedIn === true;
+
   const stackHeaderStyle = {
     backgroundColor: "#ffffff",
     borderBottomWidth: 1,
@@ -78,11 +80,11 @@ function RootLayoutNav() {
     <SafeAreaProvider>
       <StatusBar style="auto" />
       <Stack screenOptions={stackHeaderDefaults}>
-        <Stack.Protected guard={false}>
+        <Stack.Protected guard={!signedIn}>
           {/* Screens ONLY available when LOGGED OUT */}
           <Stack.Screen name="index" options={{ headerShown: false }} />
         </Stack.Protected>
-        <Stack.Protected guard={true}>
+        <Stack.Protected guard={signedIn}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen
             name="protocols"
@@ -145,10 +147,6 @@ function RootLayoutNav() {
               headerShown: true,
               headerTitle: "Türme",
               headerTransparent: true,
-              headerStyle: {
-                backgroundColor: "transparent",
-                borderBottomWidth: 0,
-              } as { backgroundColor?: string },
               headerRight: () => (
                 <IconPlus
                   onPress={async () => {

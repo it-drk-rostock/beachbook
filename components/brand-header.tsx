@@ -5,18 +5,16 @@ import { useCSSVariable } from "uniwind";
 export function BrandHeader() {
   const textOnSurfaceColor = useCSSVariable("--color-on-surface") as string;
   const primaryColor = useCSSVariable("--color-primary") as string;
+
   return (
     <View className="flex-row items-center gap-3">
-      {/* Vertical Icon Stack */}
       <View className="items-center justify-center">
         <IconBeach size={24} color={primaryColor} />
-        <View className="h-0.5" /> {/* Small spacing between icons */}
+        <View className="h-0.5" />
         <IconBook size={24} color={textOnSurfaceColor} />
       </View>
 
-      <Text
-        className={`font-bold text-on-surface ${"text-2xl tracking-tighter"}`}
-      >
+      <Text className="text-2xl font-bold tracking-tighter text-on-surface">
         BeachBook
       </Text>
     </View>

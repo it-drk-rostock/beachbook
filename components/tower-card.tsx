@@ -59,7 +59,7 @@ export function TowerCard({
       <View className="flex-row items-center justify-between">
         <View className="flex-1 mr-3">
           <Typography variant="title-large" bold>
-            {name} {number} · {locationName ?? "–"}
+            {name} {number} - {locationName ?? "–"}
           </Typography>
 
           <View className="flex-row flex-wrap items-center gap-2 mt-2">

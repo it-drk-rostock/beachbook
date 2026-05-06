@@ -43,7 +43,8 @@
           "cameraPermissionText": "BeachBook benötigt Zugriff auf die Kamera zum Scannen von QR-Codes.",
           "barcodeScannerEnabled": true
         }
-      ]
+      ],
+      "@clerk/expo"
     ],
     "experiments": {
       "typedRoutes": true

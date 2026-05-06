@@ -109,10 +109,9 @@ export default function TowerDetailScreen() {
       };
 
     const current = new Date(now);
-    const mins = current.getMinutes();
-    current.setMinutes(mins < 30 ? 0 : 30, 0, 0);
+    current.setMinutes(0, 0, 0);
     const windowStart = current.getTime();
-    const windowEnd = windowStart + 30 * 60 * 1000;
+    const windowEnd = windowStart + 60 * 60 * 1000;
 
     const shifts = towerday.shiftsViaTowerday ?? [];
     const guards = towerday.guardsViaTowerday ?? [];
@@ -201,7 +200,7 @@ export default function TowerDetailScreen() {
         )}
         {isAdmin && (
           <View className="flex-row items-center gap-1 rounded-full bg-badge px-2.5 py-1">
-            <IconDiamond size={12} color="var(--color-on-badge)" />
+            <IconDiamond size={12} color="#374151" />
             <Typography
               variant="label-small"
               bold
@@ -461,20 +460,24 @@ export default function TowerDetailScreen() {
             }))}
           />
 
-          <Spacer size="group" />
+          {tower.main && (
+            <>
+              <Spacer size="group" />
 
-          <TowerdayWeather
-            towerdayId={towerday.id}
-            organizationId={tower.organizationId}
-            weather={(towerday.weatherViaTowerday ?? []).map((w) => ({
-              id: w.id,
-              dateTime: w.dateTime,
-              airInCelsius: w.airInCelsius,
-              waterInCelsius: w.waterInCelsius,
-              windInBft: w.windInBft,
-              windDirection: w.windDirection,
-            }))}
-          />
+              <TowerdayWeather
+                towerdayId={towerday.id}
+                organizationId={tower.organizationId}
+                weather={(towerday.weatherViaTowerday ?? []).map((w) => ({
+                  id: w.id,
+                  dateTime: w.dateTime,
+                  airInCelsius: w.airInCelsius,
+                  waterInCelsius: w.waterInCelsius,
+                  windInBft: w.windInBft,
+                  windDirection: w.windDirection,
+                }))}
+              />
+            </>
+          )}
 
           <Spacer size="section" />
 
