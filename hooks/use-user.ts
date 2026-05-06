@@ -12,8 +12,6 @@ export function useUser() {
       : undefined,
   );
 
-  console.log("membership:", membership);
-
   const member = membership?.[0];
   const organization = member?.organization;
 
