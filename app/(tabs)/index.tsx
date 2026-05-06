@@ -47,6 +47,7 @@ export default function DashboardScreen() {
         })
       : undefined,
   );
+  console.log(hasOrganization && organization);
 
   const towerdays = useAll(
     hasOrganization && organization

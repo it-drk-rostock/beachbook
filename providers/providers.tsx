@@ -15,6 +15,7 @@ function JazzClerkBridge({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn, getToken } = useAuth({
     treatPendingAsSignedOut: false,
   });
+
   const [jwtToken, setJwtToken] = React.useState<string | undefined>(undefined);
 
   React.useEffect(() => {
