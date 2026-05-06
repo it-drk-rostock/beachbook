@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
 import { useAll, useDb } from "jazz-tools/react-native";
+
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   IconAdjustmentsHorizontal,
@@ -28,7 +29,6 @@ import { TowerdayIncidents } from "@/components/towerday-incidents";
 import { TowerdayWeather } from "@/components/towerday-weather";
 import { useUser } from "@/hooks/use-user";
 import { useCSSVariable } from "uniwind";
-
 type TowerStatus =
   | "lifeguard_on_duty"
   | "use_caution_when_swimming"
@@ -45,6 +45,7 @@ const statusOptions: { value: TowerStatus; label: string }[] = [
 export default function TowerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const db = useDb();
+
   const { isAdmin } = useUser();
   const primaryColor = useCSSVariable("--color-primary") as string;
 
@@ -90,6 +91,28 @@ export default function TowerDetailScreen() {
   );
   const towerday = towerdays?.[0];
 
+  const previousTowerdays = useAll(
+    tower
+      ? app.towerdays
+          .where({
+            towerId: tower.id,
+            date: { lt: todayStart },
+          })
+          .include({ todosViaTowerday: true })
+          .orderBy("date", "desc")
+          .limit(1)
+      : undefined,
+  );
+
+  const latestPreviousTowerday = useMemo(() => {
+    if (!previousTowerdays || previousTowerdays.length === 0) return null;
+    return [...previousTowerdays].sort((a, b) => {
+      const dateA = typeof a.date === "number" ? a.date : new Date(a.date).getTime();
+      const dateB = typeof b.date === "number" ? b.date : new Date(b.date).getTime();
+      return dateB - dateA;
+    })[0];
+  }, [previousTowerdays]);
+
   const router = useRouter();
 
   const protocols = useAll(
@@ -99,7 +122,6 @@ export default function TowerDetailScreen() {
   );
 
   const now = useMemo(() => Date.now(), []);
-
 
   const { currentDutyNames, currentPreparedNames } = useMemo(() => {
     if (!towerday)
@@ -153,12 +175,28 @@ export default function TowerDetailScreen() {
 
   const createTowerday = () => {
     if (!tower) return;
-    db.insert(app.towerdays, {
+
+    const newTowerday = db.insert(app.towerdays, {
       towerId: tower.id,
       organizationId: tower.organizationId,
       date: todayStart,
       isCompleted: false,
     });
+
+    const incompleteTodos =
+      latestPreviousTowerday?.todosViaTowerday?.filter(
+        (t) => !t.isCompleted,
+      ) ?? [];
+
+    for (const todo of incompleteTodos) {
+      db.insert(app.todos, {
+        towerdayId: newTowerday.value.id,
+        organizationId: tower.organizationId,
+        title: todo.title,
+        commment: todo.commment,
+        isCompleted: false,
+      });
+    }
   };
 
   if (!tower) {
