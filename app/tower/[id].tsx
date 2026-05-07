@@ -876,18 +876,16 @@ export default function TowerDetailScreen() {
             disabled={!hasSignatureInput}
             onPress={() => signatureRef.current?.readSignature()}
           >
-            {activeSignatureRole === "guardleader"
-              ? "Unterschrift speichern und abschließen"
-              : "Unterschrift speichern"}
+            Speichern
           </Button>
           <Button
-            variant="outline"
+            variant="danger-light"
             fullWidth
             onPress={() => signatureRef.current?.clearSignature()}
           >
             Unterschrift löschen
           </Button>
-          <Button variant="light" fullWidth onPress={closeSignatureSheet}>
+          <Button variant="secondary" fullWidth onPress={closeSignatureSheet}>
             Abbrechen
           </Button>
         </View>
