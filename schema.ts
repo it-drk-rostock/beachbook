@@ -107,6 +107,14 @@ const schema = {
     ),
     dateTime: s.timestamp(),
   }),
+  auditlog: s.table({
+    towerdayId: s.ref("towerdays"),
+    organizationId: s.ref("organizations"),
+    memberId: s.ref("members"),
+    action: s.string(),
+    timestamp: s.timestamp(),
+    data: s.json().optional(),
+  }),
 };
 
 type AppSchema = s.Schema<typeof schema>;

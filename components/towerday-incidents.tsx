@@ -13,6 +13,7 @@ import {
   IconClock,
 } from "@tabler/icons-react-native";
 import { app } from "@/schema";
+import { useAuditLog } from "@/hooks/use-audit-log";
 import { Typography } from "@/components/typography";
 import { TextInput } from "@/components/text-input";
 import { Spacer } from "@/components/spacer";
@@ -49,6 +50,7 @@ export function TowerdayIncidents({
   incidents,
 }: TowerdayIncidentsProps) {
   const db = useDb();
+  const { logAction } = useAuditLog();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState(new Date());
@@ -73,10 +75,20 @@ export function TowerdayIncidents({
   };
 
   const save = (data: IncidentFormData) => {
+    const time = selectedTime.toLocaleTimeString("de-DE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     if (editingId) {
       db.update(app.incidents, editingId, {
         description: data.description.trim(),
         dateTime: selectedTime.getTime(),
+      });
+      logAction({
+        towerdayId,
+        organizationId,
+        action: "incident_edited",
+        data: { description: data.description.trim(), time },
       });
     } else {
       db.insert(app.incidents, {
@@ -85,13 +97,32 @@ export function TowerdayIncidents({
         description: data.description.trim(),
         dateTime: selectedTime.getTime(),
       });
+      logAction({
+        towerdayId,
+        organizationId,
+        action: "incident_added",
+        data: { description: data.description.trim(), time },
+      });
     }
     TrueSheet.dismiss("towerday-incident-form");
   };
 
   const deleteIncident = () => {
     if (!editingId) return;
+    const incident = incidents.find((i) => i.id === editingId);
+    const time = incident
+      ? new Date(incident.dateTime).toLocaleTimeString("de-DE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : undefined;
     db.delete(app.incidents, editingId);
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "incident_deleted",
+      data: { description: incident?.description, time },
+    });
     TrueSheet.dismiss("towerday-incident-form");
   };
 

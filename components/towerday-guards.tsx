@@ -7,6 +7,7 @@ import { useDb } from "jazz-tools/react-native";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { IconPlus, IconX, IconTrash } from "@tabler/icons-react-native";
 import { app } from "@/schema";
+import { useAuditLog } from "@/hooks/use-audit-log";
 import { Typography } from "@/components/typography";
 import { TextInput } from "@/components/text-input";
 import { Spacer } from "@/components/spacer";
@@ -50,6 +51,7 @@ export function TowerdayGuards({
   guards,
 }: TowerdayGuardsProps) {
   const db = useDb();
+  const { logAction } = useAuditLog();
 
   const guardleader = guards.find((g) => g.role === "guardleader");
   const towerleader = guards.find((g) => g.role === "towerleader");
@@ -96,12 +98,24 @@ export function TowerdayGuards({
       leaderEditRole === "guardleader" ? guardleader : towerleader;
     if (existing) {
       db.update(app.guards, existing.id, { name: data.name.trim() });
+      logAction({
+        towerdayId,
+        organizationId,
+        action: "leader_edited",
+        data: { role: leaderEditRole, name: data.name.trim() },
+      });
     } else {
       db.insert(app.guards, {
         towerdayId,
         organizationId,
         role: leaderEditRole,
         name: data.name.trim(),
+      });
+      logAction({
+        towerdayId,
+        organizationId,
+        action: "leader_added",
+        data: { role: leaderEditRole, name: data.name.trim() },
       });
     }
     TrueSheet.dismiss("tower-edit-leader");
@@ -116,12 +130,25 @@ export function TowerdayGuards({
   const saveGuardEdit = (data: EditGuardFormData) => {
     if (!editingGuardId) return;
     db.update(app.guards, editingGuardId, { name: data.name.trim() });
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "guard_edited",
+      data: { name: data.name.trim() },
+    });
     TrueSheet.dismiss("tower-edit-guard");
   };
 
   const deleteGuard = () => {
     if (!editingGuardId) return;
+    const guard = guards.find((g) => g.id === editingGuardId);
     db.delete(app.guards, editingGuardId);
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "guard_removed",
+      data: { name: guard?.name },
+    });
     TrueSheet.dismiss("tower-edit-guard");
   };
 
@@ -140,6 +167,12 @@ export function TowerdayGuards({
         organizationId,
         role: "guard",
         name,
+      });
+      logAction({
+        towerdayId,
+        organizationId,
+        action: "guard_added",
+        data: { name },
       });
     }
     addGuardsForm.reset({ guards: [{ name: "" }] });

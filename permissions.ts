@@ -66,4 +66,8 @@ export default s.definePermissions(app, ({ policy }) => {
   policy.towerstatuses.allowInsert.always();
   policy.towerstatuses.allowUpdate.always();
   policy.towerstatuses.allowDelete.always();
+  policy.auditlog.allowRead.always();
+  policy.auditlog.allowInsert.always();
+  policy.auditlog.allowUpdate.always();
+  policy.auditlog.allowDelete.always();
 });

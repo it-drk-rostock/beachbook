@@ -12,6 +12,7 @@ import {
   IconCheck,
 } from "@tabler/icons-react-native";
 import { app } from "@/schema";
+import { useAuditLog } from "@/hooks/use-audit-log";
 import { Typography } from "@/components/typography";
 import { TextInput } from "@/components/text-input";
 import { Spacer } from "@/components/spacer";
@@ -52,6 +53,7 @@ export function TowerdayTodos({
   todos,
 }: TowerdayTodosProps) {
   const db = useDb();
+  const { logAction } = useAuditLog();
 
   const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
   const editTitleRef = useRef<RNTextInput>(null);
@@ -73,6 +75,12 @@ export function TowerdayTodos({
 
   const toggleCompleted = (todo: Todo) => {
     db.update(app.todos, todo.id, { isCompleted: !todo.isCompleted });
+    logAction({
+      towerdayId,
+      organizationId,
+      action: todo.isCompleted ? "todo_uncompleted" : "todo_completed",
+      data: { title: todo.title },
+    });
   };
 
   const openEditTodo = (todo: Todo) => {
@@ -87,6 +95,15 @@ export function TowerdayTodos({
       title: data.title.trim(),
       commment: data.comment.trim() || undefined,
     });
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "todo_edited",
+      data: {
+        title: data.title.trim(),
+        comment: data.comment.trim() || undefined,
+      },
+    });
     TrueSheet.dismiss("towerday-edit-todo");
   };
 
@@ -100,12 +117,25 @@ export function TowerdayTodos({
       commment: values.comment.trim() || undefined,
       isCompleted: !todo.isCompleted,
     });
+    logAction({
+      towerdayId,
+      organizationId,
+      action: todo.isCompleted ? "todo_uncompleted" : "todo_completed",
+      data: { title: values.title.trim() },
+    });
     TrueSheet.dismiss("towerday-edit-todo");
   };
 
   const deleteTodo = () => {
     if (!editingTodoId) return;
+    const todo = todos.find((t) => t.id === editingTodoId);
     db.delete(app.todos, editingTodoId);
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "todo_deleted",
+      data: { title: todo?.title },
+    });
     TrueSheet.dismiss("towerday-edit-todo");
   };
 
@@ -124,6 +154,12 @@ export function TowerdayTodos({
         organizationId,
         title,
         isCompleted: false,
+      });
+      logAction({
+        towerdayId,
+        organizationId,
+        action: "todo_added",
+        data: { title },
       });
     }
     addForm.reset({ todos: [{ title: "" }] });

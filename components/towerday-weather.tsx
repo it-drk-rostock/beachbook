@@ -16,6 +16,7 @@ import {
   IconWind,
 } from "@tabler/icons-react-native";
 import { app } from "@/schema";
+import { useAuditLog } from "@/hooks/use-audit-log";
 import { Typography } from "@/components/typography";
 import { TextInput } from "@/components/text-input";
 import { Spacer } from "@/components/spacer";
@@ -86,6 +87,7 @@ export function TowerdayWeather({
   weather,
 }: TowerdayWeatherProps) {
   const db = useDb();
+  const { logAction } = useAuditLog();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState(new Date());
@@ -131,11 +133,23 @@ export function TowerdayWeather({
 
     if (editingId) {
       db.update(app.weather, editingId, payload);
+      logAction({
+        towerdayId,
+        organizationId,
+        action: "weather_edited",
+        data: payload,
+      });
     } else {
       db.insert(app.weather, {
         towerdayId,
         organizationId,
         ...payload,
+      });
+      logAction({
+        towerdayId,
+        organizationId,
+        action: "weather_added",
+        data: payload,
       });
     }
     TrueSheet.dismiss("towerday-weather-form");
@@ -144,6 +158,11 @@ export function TowerdayWeather({
   const deleteEntry = () => {
     if (!editingId) return;
     db.delete(app.weather, editingId);
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "weather_deleted",
+    });
     TrueSheet.dismiss("towerday-weather-form");
   };
 

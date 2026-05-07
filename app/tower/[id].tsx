@@ -12,6 +12,7 @@ import {
   IconDiamond,
   IconFilePlus,
   IconFileCheck,
+  IconHistory,
   IconShieldCheck,
   IconLock,
   IconRun,
@@ -32,6 +33,7 @@ import { TowerdayIncidents } from "@/components/towerday-incidents";
 import { TowerdayStatusHistory } from "@/components/towerday-status-history";
 import { TowerdayWeather } from "@/components/towerday-weather";
 import { useUser } from "@/hooks/use-user";
+import { useAuditLog } from "@/hooks/use-audit-log";
 import { useCSSVariable } from "uniwind";
 type TowerStatus =
   | "lifeguard_on_duty"
@@ -51,6 +53,7 @@ export default function TowerDetailScreen() {
   const db = useDb();
 
   const { isAdmin, role } = useUser();
+  const { logAction } = useAuditLog();
   const primaryColor = useCSSVariable("--color-primary") as string;
   const signatureRef = useRef<any>(null);
 
@@ -97,6 +100,15 @@ export default function TowerDetailScreen() {
       : undefined,
   );
   const towerday = towerdays?.[0];
+
+  const auditLogs = useAll(
+    towerday
+      ? app.auditlog
+          .where({ towerdayId: towerday.id })
+          .include({ member: true })
+          .orderBy("timestamp", "desc")
+      : undefined,
+  );
 
   const previousTowerdays = useAll(
     tower
@@ -247,6 +259,13 @@ export default function TowerDetailScreen() {
         isCompleted: false,
       });
     }
+
+    logAction({
+      towerdayId: newTowerday.value.id,
+      organizationId: tower.organizationId,
+      action: "towerday_created",
+      data: { towerId: tower.id, towerName: tower.name },
+    });
   };
 
   const handleTowerStatusChange = (nextStatus: TowerStatus) => {
@@ -256,6 +275,7 @@ export default function TowerDetailScreen() {
       return;
     }
 
+    const previousStatus = tower.status;
     db.update(app.towers, tower.id, { status: nextStatus });
 
     if (towerday) {
@@ -265,6 +285,13 @@ export default function TowerDetailScreen() {
         organizationId: tower.organizationId,
         status: nextStatus,
         dateTime: statusTime.getTime(),
+      });
+
+      logAction({
+        towerdayId: towerday.id,
+        organizationId: tower.organizationId,
+        action: "status_changed",
+        data: { from: previousStatus, to: nextStatus },
       });
     }
 
@@ -297,16 +324,31 @@ export default function TowerDetailScreen() {
   };
 
   const persistSignature = (signature: string) => {
-    if (!towerday || !activeSignatureRole || !signature) return;
+    if (!towerday || !activeSignatureRole || !signature || !tower) return;
 
     if (activeSignatureRole === "towerleader") {
       db.update(app.towerdays, towerday.id, {
         towerleaderSignature: signature,
       });
+      logAction({
+        towerdayId: towerday.id,
+        organizationId: tower.organizationId,
+        action: "towerleader_signed",
+      });
     } else {
       db.update(app.towerdays, towerday.id, {
         guardleaderSignature: signature,
         isCompleted: true,
+      });
+      logAction({
+        towerdayId: towerday.id,
+        organizationId: tower.organizationId,
+        action: "guardleader_signed",
+      });
+      logAction({
+        towerdayId: towerday.id,
+        organizationId: tower.organizationId,
+        action: "towerday_completed",
       });
     }
 
@@ -512,6 +554,25 @@ export default function TowerDetailScreen() {
         </Pressable>
       </View>
 
+      {(role === "guardleader" || isAdmin) && towerday && (
+        <>
+          <Spacer size="item" />
+          <Pressable
+            className="w-full flex-row items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface px-3 py-4 active:opacity-80"
+            onPress={() => TrueSheet.present("towerday-audit-log")}
+          >
+            <IconHistory size={22} color={primaryColor} />
+            <Typography
+              variant="label-large"
+              bold
+              className="text-primary text-center"
+            >
+              Revision
+            </Typography>
+          </Pressable>
+        </>
+      )}
+
       <Spacer size="section" />
 
       <SectionHeader>Turmbuch</SectionHeader>
@@ -600,12 +661,17 @@ export default function TowerDetailScreen() {
           <Button
             variant="outline"
             fullWidth
-            onPress={() =>
+            onPress={() => {
               db.update(app.towerdays, towerday.id, {
                 isCompleted: false,
                 guardleaderSignature: "",
-              })
-            }
+              });
+              logAction({
+                towerdayId: towerday.id,
+                organizationId: tower.organizationId,
+                action: "towerday_reopened",
+              });
+            }}
           >
             <View className="flex-row items-center gap-2">
               <IconLock size={18} color="#008CCD" />
@@ -835,6 +901,74 @@ export default function TowerDetailScreen() {
           </Pressable>
         </View>
       )}
+
+      <TrueSheet
+        name="towerday-audit-log"
+        detents={[0.5, 1]}
+        cornerRadius={24}
+        grabber
+        scrollable
+        backgroundColor="#FFFFFF"
+      >
+        <ScrollView style={{ padding: 24, paddingTop: 8 }}>
+          <Typography variant="title-large" bold>
+            Revision
+          </Typography>
+          <Spacer size="group" />
+          {!auditLogs || auditLogs.length === 0 ? (
+            <View className="rounded-2xl border border-outline-variant bg-surface p-4">
+              <Typography
+                variant="body-large"
+                className="text-on-surface-variant"
+              >
+                Noch keine Einträge vorhanden.
+              </Typography>
+            </View>
+          ) : (
+            <View className="rounded-2xl border border-outline-variant bg-surface overflow-hidden">
+              {auditLogs.map((log, index) => (
+                <View key={log.id}>
+                  <View className="p-4 gap-1">
+                    <View className="flex-row items-center justify-between">
+                      <Typography variant="label-large" bold>
+                        {log.action}
+                      </Typography>
+                      <Typography
+                        variant="label-small"
+                        className="text-on-surface-variant"
+                      >
+                        {new Date(log.timestamp).toLocaleTimeString("de-DE", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Typography>
+                    </View>
+                    <Typography
+                      variant="body-small"
+                      className="text-on-surface-variant"
+                    >
+                      {log.member?.name ?? "–"}
+                    </Typography>
+                    {log.data &&
+                      Object.keys(log.data as object).length > 0 && (
+                        <Typography
+                          variant="body-small"
+                          className="text-on-surface-variant"
+                        >
+                          {Object.entries(log.data as Record<string, unknown>)
+                            .map(([k, v]) => `${k}: ${v}`)
+                            .join(", ")}
+                        </Typography>
+                      )}
+                  </View>
+                  {index < auditLogs.length - 1 && <Divider />}
+                </View>
+              ))}
+            </View>
+          )}
+          <Spacer size="group" />
+        </ScrollView>
+      </TrueSheet>
 
       <TrueSheet
         name="towerday-signature"

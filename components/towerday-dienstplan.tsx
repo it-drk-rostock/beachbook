@@ -8,6 +8,7 @@ import DateTimePicker, {
 import { IconClock, IconTrash, IconX } from "@tabler/icons-react-native";
 import { Timeline, type TimelineEventProps } from "react-native-calendars";
 import { app } from "@/schema";
+import { useAuditLog } from "@/hooks/use-audit-log";
 import { Typography } from "@/components/typography";
 import { SectionHeader } from "@/components/section-header";
 import { Spacer } from "@/components/spacer";
@@ -79,6 +80,7 @@ export function TowerdayDienstplan({
   guards,
 }: TowerdayDienstplanProps) {
   const db = useDb();
+  const { logAction } = useAuditLog();
 
   const today = useMemo(() => {
     const d = new Date();
@@ -202,6 +204,17 @@ export function TowerdayDienstplan({
       start: addDraft.startTime.getTime(),
       end: addDraft.endTime.getTime(),
     });
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "shift_added",
+      data: {
+        type: addDraft.type,
+        guardName: guardNameById.get(addDraft.guardId),
+        start: formatTime(addDraft.startTime),
+        end: formatTime(addDraft.endTime),
+      },
+    });
     await TrueSheet.dismiss("duty-plan-add-shift");
   };
 
@@ -212,6 +225,17 @@ export function TowerdayDienstplan({
       start: editState.startTime.getTime(),
       end: editState.endTime.getTime(),
     });
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "shift_edited",
+      data: {
+        type: editState.type,
+        guardName: guardNameById.get(editState.guardId),
+        start: formatTime(editState.startTime),
+        end: formatTime(editState.endTime),
+      },
+    });
     await TrueSheet.dismiss("duty-plan-edit-shift");
     setEditState(null);
   };
@@ -219,6 +243,17 @@ export function TowerdayDienstplan({
   const deleteShift = async () => {
     if (!editState) return;
     db.delete(app.shifts, editState.id);
+    logAction({
+      towerdayId,
+      organizationId,
+      action: "shift_deleted",
+      data: {
+        type: editState.type,
+        guardName: guardNameById.get(editState.guardId),
+        start: formatTime(editState.startTime),
+        end: formatTime(editState.endTime),
+      },
+    });
     await TrueSheet.dismiss("duty-plan-edit-shift");
     setEditState(null);
   };
