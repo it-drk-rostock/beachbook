@@ -47,6 +47,8 @@ const schema = {
     date: s.timestamp(),
     organizationId: s.ref("organizations"),
     isCompleted: s.boolean(),
+    towerleaderSignature: s.string().optional(),
+    guardleaderSignature: s.string().optional(),
   }),
   guards: s.table({
     towerdayId: s.ref("towerdays"),

@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Platform, Pressable, ScrollView, View } from "react-native";
+import { Image, Platform, Pressable, ScrollView, View } from "react-native";
 import { useAll, useDb } from "jazz-tools/react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import SignatureCanvas from "react-native-signature-canvas";
 import {
   IconAdjustmentsHorizontal,
   IconClock,
@@ -49,8 +50,9 @@ export default function TowerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const db = useDb();
 
-  const { isAdmin } = useUser();
+  const { isAdmin, role } = useUser();
   const primaryColor = useCSSVariable("--color-primary") as string;
+  const signatureRef = useRef<any>(null);
 
   const { todayStart, tomorrowStart } = useMemo(() => {
     const start = new Date();
@@ -154,6 +156,10 @@ export default function TowerDetailScreen() {
   const [showStatusTimePicker, setShowStatusTimePicker] = useState(
     Platform.OS === "ios",
   );
+  const [activeSignatureRole, setActiveSignatureRole] = useState<
+    "towerleader" | "guardleader" | null
+  >(null);
+  const [hasSignatureInput, setHasSignatureInput] = useState(false);
 
   const formatTime = (date: Date) => {
     const h = date.getHours().toString().padStart(2, "0");
@@ -263,6 +269,48 @@ export default function TowerDetailScreen() {
     }
 
     TrueSheet.dismiss("tower-change-status");
+  };
+
+  const canTowerleaderSign =
+    !!towerday &&
+    !towerday.isCompleted &&
+    !towerday.towerleaderSignature &&
+    (role === "towerleader" || isAdmin);
+
+  const canGuardleaderSign =
+    !!towerday &&
+    !towerday.isCompleted &&
+    !!towerday.towerleaderSignature &&
+    !towerday.guardleaderSignature &&
+    (role === "guardleader" || isAdmin);
+
+  const openSignatureSheet = (nextRole: "towerleader" | "guardleader") => {
+    setActiveSignatureRole(nextRole);
+    setHasSignatureInput(false);
+    TrueSheet.present("towerday-signature");
+  };
+
+  const closeSignatureSheet = () => {
+    setHasSignatureInput(false);
+    setActiveSignatureRole(null);
+    TrueSheet.dismiss("towerday-signature");
+  };
+
+  const persistSignature = (signature: string) => {
+    if (!towerday || !activeSignatureRole || !signature) return;
+
+    if (activeSignatureRole === "towerleader") {
+      db.update(app.towerdays, towerday.id, {
+        towerleaderSignature: signature,
+      });
+    } else {
+      db.update(app.towerdays, towerday.id, {
+        guardleaderSignature: signature,
+        isCompleted: true,
+      });
+    }
+
+    closeSignatureSheet();
   };
 
   if (!tower) {
@@ -501,13 +549,62 @@ export default function TowerDetailScreen() {
                 Gesperrt
               </Typography>
             </View>
+
+            {(towerday.towerleaderSignature || towerday.guardleaderSignature) && (
+              <>
+                <Spacer size="group" />
+                <View className="w-full gap-3">
+                  {towerday.towerleaderSignature && (
+                    <View className="rounded-xl border border-outline-variant bg-background p-3">
+                      <Typography
+                        variant="label-small"
+                        bold
+                        className="text-on-surface-variant uppercase"
+                      >
+                        Turmleiter-Unterschrift
+                      </Typography>
+                      <Spacer size="inline" />
+                      <View className="h-20 overflow-hidden rounded-lg border border-outline-variant bg-white">
+                        <Image
+                          source={{ uri: towerday.towerleaderSignature }}
+                          resizeMode="contain"
+                          className="h-full w-full"
+                        />
+                      </View>
+                    </View>
+                  )}
+                  {towerday.guardleaderSignature && (
+                    <View className="rounded-xl border border-outline-variant bg-background p-3">
+                      <Typography
+                        variant="label-small"
+                        bold
+                        className="text-on-surface-variant uppercase"
+                      >
+                        Wachleiter-Unterschrift
+                      </Typography>
+                      <Spacer size="inline" />
+                      <View className="h-20 overflow-hidden rounded-lg border border-outline-variant bg-white">
+                        <Image
+                          source={{ uri: towerday.guardleaderSignature }}
+                          resizeMode="contain"
+                          className="h-full w-full"
+                        />
+                      </View>
+                    </View>
+                  )}
+                </View>
+              </>
+            )}
           </View>
           <Spacer size="item" />
           <Button
             variant="outline"
             fullWidth
             onPress={() =>
-              db.update(app.towerdays, towerday.id, { isCompleted: false })
+              db.update(app.towerdays, towerday.id, {
+                isCompleted: false,
+                guardleaderSignature: "",
+              })
             }
           >
             <View className="flex-row items-center gap-2">
@@ -615,18 +712,50 @@ export default function TowerDetailScreen() {
           )}
 
           <Spacer size="section" />
-
-          <Pressable
-            className="w-full flex-row items-center justify-center gap-2 rounded-full bg-success px-6 py-4 active:opacity-90"
-            onPress={() =>
-              db.update(app.towerdays, towerday.id, { isCompleted: true })
-            }
-          >
-            <IconShieldCheck size={20} color="#FFFFFF" />
-            <Typography variant="label-large" bold className="text-on-primary">
-              Turmbuch abschließen
-            </Typography>
-          </Pressable>
+          {canTowerleaderSign || canGuardleaderSign ? (
+            <View className="w-full gap-3">
+              {canTowerleaderSign && (
+                <Pressable
+                  className="w-full flex-row items-center justify-center gap-2 rounded-lg bg-success px-6 py-4 active:opacity-90"
+                  onPress={() => openSignatureSheet("towerleader")}
+                >
+                  <IconShieldCheck size={20} color="#FFFFFF" />
+                  <Typography
+                    variant="label-large"
+                    bold
+                    className="text-on-primary text-center"
+                  >
+                    Turmbuch abschließen
+                  </Typography>
+                </Pressable>
+              )}
+              {canGuardleaderSign && (
+                <Pressable
+                  className="w-full flex-row items-center justify-center gap-2 rounded-lg bg-success px-6 py-4 active:opacity-90"
+                  onPress={() => openSignatureSheet("guardleader")}
+                >
+                  <IconShieldCheck size={20} color="#FFFFFF" />
+                  <Typography
+                    variant="label-large"
+                    bold
+                    className="text-on-primary text-center"
+                  >
+                    Turmbuch abschließen
+                  </Typography>
+                </Pressable>
+              )}
+            </View>
+          ) : towerday.towerleaderSignature && !towerday.guardleaderSignature ? (
+            <View className="w-full rounded-xl border border-outline-variant bg-surface px-4 py-3">
+              <Typography
+                variant="body-medium"
+                className="text-on-surface-variant text-center"
+              >
+                Turmleiter hat unterschrieben. Wachleiter-Unterschrift steht noch
+                aus.
+              </Typography>
+            </View>
+          ) : null}
         </>
       )}
 
@@ -706,6 +835,63 @@ export default function TowerDetailScreen() {
           </Pressable>
         </View>
       )}
+
+      <TrueSheet
+        name="towerday-signature"
+        detents={[0.85]}
+        cornerRadius={24}
+        grabber
+        dimmed
+        backgroundColor="#FFFFFF"
+        onDidDismiss={() => {
+          setHasSignatureInput(false);
+          setActiveSignatureRole(null);
+        }}
+      >
+        <View style={{ padding: 24, paddingTop: 8, gap: 16 }}>
+          <Typography variant="title-large" bold>
+            {activeSignatureRole === "guardleader"
+              ? "Wachleiter-Unterschrift"
+              : "Turmleiter-Unterschrift"}
+          </Typography>
+          <Typography variant="body-medium" className="text-on-surface-variant">
+            Bitte unterschreiben, um den Schritt zu bestaetigen.
+          </Typography>
+          <View className="h-72 overflow-hidden rounded-2xl border border-outline-variant bg-white">
+            <SignatureCanvas
+              ref={signatureRef}
+              onOK={persistSignature}
+              onEnd={() => setHasSignatureInput(true)}
+              onClear={() => setHasSignatureInput(false)}
+              descriptionText=""
+              webStyle={`
+                .m-signature-pad {box-shadow: none; border: none;}
+                .m-signature-pad--footer {display: none; margin: 0px;}
+                body,html {height: 100%;}
+              `}
+            />
+          </View>
+          <Button
+            fullWidth
+            disabled={!hasSignatureInput}
+            onPress={() => signatureRef.current?.readSignature()}
+          >
+            {activeSignatureRole === "guardleader"
+              ? "Unterschrift speichern und abschließen"
+              : "Unterschrift speichern"}
+          </Button>
+          <Button
+            variant="outline"
+            fullWidth
+            onPress={() => signatureRef.current?.clearSignature()}
+          >
+            Unterschrift löschen
+          </Button>
+          <Button variant="light" fullWidth onPress={closeSignatureSheet}>
+            Abbrechen
+          </Button>
+        </View>
+      </TrueSheet>
 
       <TrueSheet
         name="tower-change-status"
