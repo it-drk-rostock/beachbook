@@ -66,6 +66,7 @@ export default function TowerDetailScreen() {
       ? app.towers.where({ id }).include({
           location: true,
           organization: true,
+
           submissionsViaTower: app.submissions
             .where({ date: { gte: todayStart, lt: tomorrowStart } })
             .include({ protocol: true }),
@@ -111,8 +112,10 @@ export default function TowerDetailScreen() {
   const latestPreviousTowerday = useMemo(() => {
     if (!previousTowerdays || previousTowerdays.length === 0) return null;
     return [...previousTowerdays].sort((a, b) => {
-      const dateA = typeof a.date === "number" ? a.date : new Date(a.date).getTime();
-      const dateB = typeof b.date === "number" ? b.date : new Date(b.date).getTime();
+      const dateA =
+        typeof a.date === "number" ? a.date : new Date(a.date).getTime();
+      const dateB =
+        typeof b.date === "number" ? b.date : new Date(b.date).getTime();
       return dateB - dateA;
     })[0];
   }, [previousTowerdays]);
@@ -131,8 +134,14 @@ export default function TowerDetailScreen() {
     const entries = towerday?.towerstatusesViaTowerday;
     if (!entries || entries.length === 0) return null;
     const sorted = [...entries].sort((a, b) => {
-      const ta = typeof a.dateTime === "number" ? a.dateTime : new Date(a.dateTime).getTime();
-      const tb = typeof b.dateTime === "number" ? b.dateTime : new Date(b.dateTime).getTime();
+      const ta =
+        typeof a.dateTime === "number"
+          ? a.dateTime
+          : new Date(a.dateTime).getTime();
+      const tb =
+        typeof b.dateTime === "number"
+          ? b.dateTime
+          : new Date(b.dateTime).getTime();
       return tb - ta;
     });
     return new Date(sorted[0].dateTime).toLocaleTimeString("de-DE", {
@@ -220,9 +229,8 @@ export default function TowerDetailScreen() {
     });
 
     const incompleteTodos =
-      latestPreviousTowerday?.todosViaTowerday?.filter(
-        (t) => !t.isCompleted,
-      ) ?? [];
+      latestPreviousTowerday?.todosViaTowerday?.filter((t) => !t.isCompleted) ??
+      [];
 
     for (const todo of incompleteTodos) {
       db.insert(app.todos, {

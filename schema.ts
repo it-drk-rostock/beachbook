@@ -31,7 +31,7 @@ const schema = {
   }),
   towers: s.table({
     name: s.string(),
-    number:s.int(),
+    number: s.int(),
     locationId: s.ref("locations"),
     organizationId: s.ref("organizations"),
     main: s.boolean(),
