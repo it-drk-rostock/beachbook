@@ -229,97 +229,97 @@ export function TowerdayDienstplan({
 
       <Spacer size="item" />
 
-      {/* Dienst */}
-      <View>
-        <View className="mb-2 flex-row items-center justify-between">
-          <Typography
-            variant="label-small"
-            bold
-            className="text-on-surface-variant uppercase"
-          >
-            Dienst
-          </Typography>
-          <Pressable
-            onPress={() => openAddSheet("duty")}
-            className="rounded-lg border border-duty bg-transparent px-3 py-1.5 active:opacity-80"
-          >
+      <View className="flex-col gap-6 md:flex-row md:gap-3">
+        {/* Dienst */}
+        <View className="flex-1">
+          <View className="mb-2 flex-row items-center justify-between">
             <Typography
               variant="label-small"
               bold
-              className="text-on-duty-container"
+              className="text-on-surface-variant uppercase"
             >
-              + Hinzufügen
+              Dienst
             </Typography>
-          </Pressable>
-        </View>
-        <View
-          className="overflow-hidden rounded-2xl border border-outline-variant bg-surface"
-          style={{ height: TIMELINE_HEIGHT }}
-        >
-          <Timeline
-            date={today}
-            events={dutyShifts.map((s) =>
-              toTimelineEvent(s, DUTY_EVENT_COLOR),
-            )}
-            start={TIMELINE_START}
-            end={TIMELINE_END}
-            format24h
-            timelineLeftInset={60}
-            onEventPress={(event) => {
-              const shift = dutyShifts.find((s) => s.id === event.id);
-              if (shift) openEditSheet(shift);
-            }}
-            theme={DUTY_TIMELINE_THEME}
-          />
-        </View>
-      </View>
-
-      <Spacer size="group" />
-
-      {/* Bereitschaft */}
-      <View>
-        <View className="mb-2 flex-row items-center justify-between">
-          <Typography
-            variant="label-small"
-            bold
-            className="text-on-surface-variant uppercase"
+            <Pressable
+              onPress={() => openAddSheet("duty")}
+              className="rounded-lg border border-duty bg-transparent px-3 py-1.5 active:opacity-80"
+            >
+              <Typography
+                variant="label-small"
+                bold
+                className="text-on-duty-container"
+              >
+                + Hinzufügen
+              </Typography>
+            </Pressable>
+          </View>
+          <View
+            className="overflow-hidden rounded-2xl border border-outline-variant bg-surface"
+            style={{ height: TIMELINE_HEIGHT }}
           >
-            Bereitschaft
-          </Typography>
-          <Pressable
-            onPress={() => openAddSheet("prepared")}
-            className="rounded-lg border border-prepared bg-transparent px-3 py-1.5 active:opacity-80"
-          >
+            <Timeline
+              date={today}
+              events={dutyShifts.map((s) =>
+                toTimelineEvent(s, DUTY_EVENT_COLOR),
+              )}
+              start={TIMELINE_START}
+              end={TIMELINE_END}
+              format24h
+              timelineLeftInset={60}
+              onEventPress={(event) => {
+                const shift = dutyShifts.find((s) => s.id === event.id);
+                if (shift) openEditSheet(shift);
+              }}
+              theme={DUTY_TIMELINE_THEME}
+            />
+          </View>
+        </View>
+
+        {/* Bereitschaft */}
+        <View className="flex-1">
+          <View className="mb-2 flex-row items-center justify-between">
             <Typography
               variant="label-small"
               bold
-              className="text-on-prepared-container"
+              className="text-on-surface-variant uppercase"
             >
-              + Hinzufügen
+              Bereitschaft
             </Typography>
-          </Pressable>
-        </View>
-        <View
-          className="overflow-hidden rounded-2xl border border-outline-variant bg-surface"
-          style={{ height: TIMELINE_HEIGHT }}
-        >
-          <Timeline
-            date={today}
-            events={preparedShifts.map((s) =>
-              toTimelineEvent(s, PREPARED_EVENT_COLOR),
-            )}
-            start={TIMELINE_START}
-            end={TIMELINE_END}
-            format24h
-            timelineLeftInset={60}
-            onEventPress={(event) => {
-              const shift = preparedShifts.find(
-                (s) => s.id === event.id,
-              );
-              if (shift) openEditSheet(shift);
-            }}
-            theme={PREPARED_TIMELINE_THEME}
-          />
+            <Pressable
+              onPress={() => openAddSheet("prepared")}
+              className="rounded-lg border border-prepared bg-transparent px-3 py-1.5 active:opacity-80"
+            >
+              <Typography
+                variant="label-small"
+                bold
+                className="text-on-prepared-container"
+              >
+                + Hinzufügen
+              </Typography>
+            </Pressable>
+          </View>
+          <View
+            className="overflow-hidden rounded-2xl border border-outline-variant bg-surface"
+            style={{ height: TIMELINE_HEIGHT }}
+          >
+            <Timeline
+              date={today}
+              events={preparedShifts.map((s) =>
+                toTimelineEvent(s, PREPARED_EVENT_COLOR),
+              )}
+              start={TIMELINE_START}
+              end={TIMELINE_END}
+              format24h
+              timelineLeftInset={60}
+              onEventPress={(event) => {
+                const shift = preparedShifts.find(
+                  (s) => s.id === event.id,
+                );
+                if (shift) openEditSheet(shift);
+              }}
+              theme={PREPARED_TIMELINE_THEME}
+            />
+          </View>
         </View>
       </View>
 
