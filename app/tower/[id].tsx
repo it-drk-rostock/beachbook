@@ -65,7 +65,9 @@ export default function TowerDetailScreen() {
     return { todayStart: start.getTime(), tomorrowStart: end.getTime() };
   }, []);
 
-  // Query 1: Tower with location, organization, and today's submissions
+  // Single query: tower with all today's data nested as reverse-relation includes.
+  // Merging into one subscription fixes child-relation reactivity and removes
+  // the query-2-depends-on-query-1 waterfall.
   const towers = useAll(
     id
       ? app.towers.where({ id }).include({
@@ -75,31 +77,23 @@ export default function TowerDetailScreen() {
           submissionsViaTower: app.submissions
             .where({ date: { gte: todayStart, lt: tomorrowStart } })
             .include({ protocol: true }),
+
+          towerdaysViaTower: app.towerdays
+            .where({ date: { gte: todayStart, lt: tomorrowStart } })
+            .include({
+              guardsViaTowerday: true,
+              shiftsViaTowerday: true,
+              todosViaTowerday: true,
+              incidentsViaTowerday: true,
+              weatherViaTowerday: true,
+              towerstatusesViaTowerday: true,
+            }),
         })
       : undefined,
   );
   const tower = towers?.[0];
   const submissions = tower?.submissionsViaTower ?? [];
-
-  // Query 2: Today's towerday with guards (separate for reactivity)
-  const towerdays = useAll(
-    tower
-      ? app.towerdays
-          .where({
-            towerId: tower.id,
-            date: { gte: todayStart, lt: tomorrowStart },
-          })
-          .include({
-            guardsViaTowerday: true,
-            shiftsViaTowerday: true,
-            todosViaTowerday: true,
-            incidentsViaTowerday: true,
-            weatherViaTowerday: true,
-            towerstatusesViaTowerday: true,
-          })
-      : undefined,
-  );
-  const towerday = towerdays?.[0];
+  const towerday = tower?.towerdaysViaTower?.[0];
 
   const auditLogs = useAll(
     towerday
