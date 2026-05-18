@@ -110,29 +110,6 @@ export default function TowerDetailScreen() {
       : undefined,
   );
 
-  const previousTowerdays = useAll(
-    tower
-      ? app.towerdays
-          .where({
-            towerId: tower.id,
-            date: { lt: todayStart },
-          })
-          .include({ todosViaTowerday: true })
-          .orderBy("date", "desc")
-          .limit(1)
-      : undefined,
-  );
-
-  const latestPreviousTowerday = useMemo(() => {
-    if (!previousTowerdays || previousTowerdays.length === 0) return null;
-    return [...previousTowerdays].sort((a, b) => {
-      const dateA =
-        typeof a.date === "number" ? a.date : new Date(a.date).getTime();
-      const dateB =
-        typeof b.date === "number" ? b.date : new Date(b.date).getTime();
-      return dateB - dateA;
-    })[0];
-  }, [previousTowerdays]);
 
   const router = useRouter();
 
@@ -218,7 +195,7 @@ export default function TowerDetailScreen() {
       protocolId,
       towerId: tower.id,
       organizationId: tower.organizationId,
-      date: Date.now(),
+      date: new Date(),
       status: "open" as const,
       data: {},
     });
@@ -229,43 +206,57 @@ export default function TowerDetailScreen() {
     router.push(`/submission/${submissionId}`);
   };
 
-  const createTowerday = () => {
+  const createTowerday = async () => {
     if (!tower) return;
 
-    const newTowerday = db.insert(app.towerdays, {
-      towerId: tower.id,
-      organizationId: tower.organizationId,
-      date: todayStart,
-      isCompleted: false,
-    });
-    db.insert(app.towerstatuses, {
-      towerdayId: newTowerday.value.id,
-      towerId: tower.id,
-      organizationId: tower.organizationId,
-      status: tower.status,
-      dateTime: Date.now(),
-    });
-
+    // Oneshot query: fetch the most recent previous towerday's incomplete todos
+    // at the moment of creation. Must happen before the batch since db.batch()
+    // is synchronous and cannot contain async reads.
+    const previousTowerdays = await db.all(
+      app.towerdays
+        .where({ towerId: tower.id, date: { lt: todayStart } })
+        .include({ todosViaTowerday: true })
+        .orderBy("date", "desc")
+        .limit(1),
+    );
     const incompleteTodos =
-      latestPreviousTowerday?.todosViaTowerday?.filter((t) => !t.isCompleted) ??
+      previousTowerdays?.[0]?.todosViaTowerday?.filter((t) => !t.isCompleted) ??
       [];
 
-    for (const todo of incompleteTodos) {
-      db.insert(app.todos, {
-        towerdayId: newTowerday.value.id,
+    // Group all inserts into a single batch for one atomic local commit.
+    const result = db.batch((batch) => {
+      const newTowerday = batch.insert(app.towerdays, {
+        towerId: tower.id,
         organizationId: tower.organizationId,
-        title: todo.title,
-        commment: todo.commment,
+        date: new Date(todayStart),
         isCompleted: false,
       });
-    }
+      batch.insert(app.towerstatuses, {
+        towerdayId: newTowerday.id,
+        towerId: tower.id,
+        organizationId: tower.organizationId,
+        status: tower.status,
+        dateTime: new Date(),
+      });
+      for (const todo of incompleteTodos) {
+        batch.insert(app.todos, {
+          towerdayId: newTowerday.id,
+          organizationId: tower.organizationId,
+          title: todo.title,
+          commment: todo.commment,
+          isCompleted: false,
+        });
+      }
 
-    logAction({
-      towerdayId: newTowerday.value.id,
-      organizationId: tower.organizationId,
-      action: "towerday_created",
-      data: { towerId: tower.id, towerName: tower.name },
+      logAction({
+        towerdayId: newTowerday.id,
+        organizationId: tower.organizationId,
+        action: "towerday_created",
+        data: { towerId: tower.id, towerName: tower.name },
+      });
     });
+
+    await result.wait({ tier: "local" });
   };
 
   const handleTowerStatusChange = (nextStatus: TowerStatus) => {
@@ -284,7 +275,7 @@ export default function TowerDetailScreen() {
         towerId: tower.id,
         organizationId: tower.organizationId,
         status: nextStatus,
-        dateTime: statusTime.getTime(),
+        dateTime: statusTime,
       });
 
       logAction({
