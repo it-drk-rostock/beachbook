@@ -1,3 +1,5 @@
+import "react-native-get-random-values";
+import "jazz-tools/expo/polyfills";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
